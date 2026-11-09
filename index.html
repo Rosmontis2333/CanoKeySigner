@@ -180,7 +180,12 @@
     <p>输入 dApp 提供的连接地址，或扫描连接二维码。</p>
     <label for="wc-uri">连接地址</label><textarea id="wc-uri" rows="4" maxlength="2048" autocomplete="off" spellcheck="false" placeholder="wc:…@2?relay-protocol=irn&amp;symKey=…"></textarea>
     <div class="actions"><button id="wc-camera" class="secondary" type="button">启动摄像头扫码</button><button id="wc-camera-stop" class="secondary" type="button" hidden>关闭摄像头</button></div>
-    <video id="wc-camera-video" autoplay muted playsinline hidden aria-label="二维码扫描画面"></video>
+    <div id="wc-camera-choice" hidden><label for="wc-camera-select">扫描摄像头</label><select id="wc-camera-select" aria-label="扫描摄像头"></select></div>
+    <div id="wc-camera-preview" hidden>
+      <video id="wc-camera-video" autoplay muted playsinline hidden aria-label="二维码扫描画面"></video>
+      <div class="scan-guide" aria-hidden="true"></div>
+    </div>
+    <p id="wc-camera-hint" class="subtle" hidden>将完整二维码对准画面中央，保留四周空白。可放大 dApp 上的二维码，并稍微拉开距离，让画面对焦清晰。</p>
     <p id="wc-dialog-status" role="status" aria-live="polite"></p>
     <p id="wc-dialog-account" class="subtle">请先连接 CanoKey 并选择签名账户，再确认连接。</p>
     <button id="wc-pair" type="button" disabled>确认连接</button>
