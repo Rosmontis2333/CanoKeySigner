@@ -21,7 +21,6 @@ let device: USBDevice | undefined;
 let discovery: OpenPgpDiscovery | undefined;
 let controller: AbortController | undefined;
 let requiresReinsert = false;
-let manual = true;
 let connectionDialog: ReturnType<typeof mountWalletPairing> | undefined;
 const available = window.isSecureContext && 'usb' in navigator && 'locks' in navigator;
 const apps = new Map<Coin, ReturnType<typeof mountTransactionApp>>();
@@ -40,6 +39,7 @@ function invalidateContext(): void {
   controller?.abort();
   for (const app of apps.values()) app.invalidate();
   wallet.invalidate();
+  requestDialog.close();
 }
 function refresh(): void {
   const busy = !!controller;
@@ -58,7 +58,8 @@ function refresh(): void {
   if (coin === 'solana') get('wc-capabilities').textContent += `。批量交易最多 ${SOLANA_BATCH_LIMIT} 笔，逐笔确认。`;
   currentAddress.textContent = account?.address ?? '等待连接兼容的密钥槽位';
   copy.disabled = !account;
-  wcSign.disabled = busy || wcRpcBusy || !wcSignable || !wcConfirm.checked;
+  wcSign.disabled = busy || requiresReinsert || wcRpcBusy || !wcSignable;
+  requestClose.disabled = busy || submissionBusy;
   get('wc-sidebar').hidden = coin === 'bitcoin';
   get<HTMLButtonElement>('wc-open').disabled = !__WALLETCONNECT__ || busy;
   connectionDialog?.setReady(__WALLETCONNECT__ && !busy && !!account && coin !== 'bitcoin');
@@ -111,7 +112,15 @@ const access: DeviceAccess = {
 let activeDapp = '';
 const wcReview = get('wc-review'), wcStatus = get('wc-status');
 const wcApprove = get<HTMLButtonElement>('wc-approve'), wcReject = get<HTMLButtonElement>('wc-reject');
-const wcSign = get<HTMLButtonElement>('wc-sign'), wcConfirm = get<HTMLInputElement>('wc-confirm'), wcPin = get<HTMLInputElement>('wc-pin');
+const wcSign = get<HTMLButtonElement>('wc-sign'), wcPin = get<HTMLInputElement>('wc-pin');
+const requestDialog = get<HTMLDialogElement>('wc-request-dialog');
+const requestClose = get<HTMLButtonElement>('wc-request-close');
+let requestPending = false, submissionBusy = false;
+function showRequest(): void {
+  if (requestDialog.open) return;
+  for (const app of apps.values()) app.invalidate();
+  requestDialog.showModal();
+}
 const wcRpcPane = get('wc-rpc'), wcRpcEndpoint = get<HTMLSelectElement>('wc-rpc-endpoint');
 const wcRpcRead = get<HTMLButtonElement>('wc-rpc-read'), wcRpcCancel = get<HTMLButtonElement>('wc-rpc-cancel');
 let wcSignable = false, wcRpcBusy = false;
@@ -129,12 +138,18 @@ const wallet = createWalletConnection(access, {
   canSubmit: (chainId) => __EVM_RPC_ENDPOINTS__.some((endpoint) => `eip155:${endpoint.chainId}` === chainId)
     || __SOLANA_RPC_ENDPOINTS__.some((endpoint) => accountChain('solana', endpoint.network) === chainId),
   clear() {
+    requestPending = false;
+    if (get('wc-submission-pane').hidden) requestDialog.close();
     wcReview.replaceChildren(); wcApprove.hidden = wcReject.hidden = true; get('wc-sign-form').hidden = true;
-    wcConfirm.checked = false; wcPin.value = ''; wcSign.disabled = true; wcSignable = wcRpcBusy = false;
+    wcPin.value = ''; wcSign.disabled = true; wcSignable = wcRpcBusy = false;
     wcRpcPane.hidden = true; wcRpcRead.disabled = wcRpcCancel.disabled = true; wcRpcEndpoints = [];
   },
-  status(text) { wcStatus.textContent = __WALLETCONNECT__ ? text : '当前为离线构建，WalletConnect 需要联网构建。'; },
+  status(text) {
+    wcStatus.textContent = __WALLETCONNECT__ ? text : '当前为离线构建，WalletConnect 需要联网构建。';
+    get('wc-connection-status').textContent = wcStatus.textContent;
+  },
   proposal(proposal, namespaces) {
+    requestPending = true; showRequest();
     activeDapp = proposal.proposer.metadata.name;
     wcReview.replaceChildren(); row('dApp（对方声明）', proposal.proposer.metadata.name); row('来源（对方声明）', proposal.proposer.metadata.url);
     row('授权账户', selectedAccount()?.address ?? ''); row('链与方法', JSON.stringify(namespaces, null, 2));
@@ -146,6 +161,7 @@ const wallet = createWalletConnection(access, {
     wcApprove.hidden = wcReject.hidden = false; wcStatus.textContent = '请核对连接提案，再授权当前账户。';
   },
   request(review, method, batch) {
+    requestPending = true; showRequest();
     wcReview.replaceChildren(); row('dApp（对方声明）', activeDapp); row('请求方法', method);
     if (walletSendsTransaction(method)) row('请求用途', '本请求将签名并提交交易，可能产生链上执行及费用。硬件签名后需再次核对交易标识，单独批准提交。');
     if (batch) {
@@ -157,8 +173,10 @@ const wallet = createWalletConnection(access, {
     wcSignable = review.signable;
     get('wc-sign-form').hidden = !review.signable; wcReject.hidden = false;
     wcStatus.textContent = review.signable ? '逐项核对完整请求后再输入 PIN 签名。' : '当前请求仅供审查，请核对拒签原因。';
+    refresh();
   },
   contextRequired(account, method, paramsJson) {
+    requestPending = true; showRequest();
     row('dApp（对方声明）', activeDapp); row('请求方法', method); row('请求账户', account.address);
     row('待补充上下文', walletSendsTransaction(method)
       ? '此请求将签名并提交交易。请主动选择 RPC 来源，读取完整交易上下文、费用与执行检查，重新审查后方可签名。EVM 会展示缺失字段的补全，Solana 会解析 ALT 并保留原始消息与 blockhash。'
@@ -167,8 +185,9 @@ const wallet = createWalletConnection(access, {
     wcReject.hidden = false; wcStatus.textContent = '上下文尚未准备完成，请读取后重新审查。';
   },
   rpc(account, available, busy, signable, checks) {
+    requestPending = true; showRequest();
     wcRpcBusy = busy; wcSignable = signable;
-    if (!signable || busy) { get('wc-sign-form').hidden = true; wcPin.value = ''; wcConfirm.checked = false; wcSign.disabled = true; }
+    if (!signable || busy) { get('wc-sign-form').hidden = true; wcPin.value = ''; wcSign.disabled = true; }
     wcRpcPane.hidden = !__WALLETCONNECT__ || !available;
     wcReject.hidden = false;
     const previous = wcRpcEndpoint.value;
@@ -190,17 +209,21 @@ const wallet = createWalletConnection(access, {
       row(`整批 RPC 检查 ${index + 1} / ${checks.length}`, review.signable ? '检查通过，仍需逐笔确认签名' : '当前不可签名，整批签名已阻止');
       if (!review.signable && index > 0) for (const [label, value] of review.rows) row(`第 ${index + 1} 笔 / ${label}`, value);
     });
+    refresh();
   },
   submission(record) {
     showWalletSubmission(record);
+    submissionBusy = !!record?.busy;
+    get('wc-record').hidden = !record;
+    requestClose.disabled = !!controller || submissionBusy;
+    if (record?.active || record?.busy) showRequest();
+    else if (!record && !requestPending) requestDialog.close();
     if (record?.active) wcReject.hidden = false;
   },
 });
 for (const chain of ['evm', 'bitcoin', 'solana'] as const) apps.set(chain, mountTransactionApp(access, chain));
 function selectCoin(next: Coin): void {
   invalidateContext(); coin = next;
-  get('mode-wallet').hidden = coin === 'bitcoin';
-  if (coin === 'bitcoin') selectMode(true);
   for (const button of document.querySelectorAll<HTMLButtonElement>('[data-coin]')) {
     const active = button.dataset.coin === coin; button.classList.toggle('selected', active); button.setAttribute('aria-pressed', String(active));
   }
@@ -219,24 +242,6 @@ for (const chain of ['bitcoin', 'solana'] as const) network(chain).addEventListe
 slot.addEventListener('change', () => { invalidateContext(); refreshAccount(); });
 address.addEventListener('change', () => { invalidateContext(); refresh(); });
 copy.addEventListener('click', () => { const account = selectedAccount(); if (account) void navigator.clipboard.writeText(account.address).then(() => { copy.textContent = '已复制'; setTimeout(() => { copy.textContent = '复制地址'; }, 1600); }).catch(() => { status.textContent = '复制失败，可选择当前地址手动复制。'; }); });
-function selectMode(isManual: boolean): void {
-  if (coin === 'bitcoin') isManual = true;
-  if (manual === isManual) return;
-  wallet.invalidate();
-  controller?.abort(); for (const app of apps.values()) app.invalidate();
-  wcPin.value = ''; wcConfirm.checked = false; wcSign.disabled = true; manual = isManual;
-  get('manual-pane').hidden = !manual; get('wallet-pane').hidden = manual;
-  get('mode-manual').setAttribute('aria-selected', String(manual)); get('mode-wallet').setAttribute('aria-selected', String(!manual));
-  get('mode-manual').tabIndex = manual ? 0 : -1; get('mode-wallet').tabIndex = manual ? -1 : 0;
-}
-get('mode-manual').addEventListener('click', () => selectMode(true)); get('mode-wallet').addEventListener('click', () => selectMode(false));
-for (const tab of [get('mode-manual'), get('mode-wallet')]) tab.addEventListener('keydown', (event) => {
-  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
-  event.preventDefault();
-  if (coin === 'bitcoin') return;
-  const selectManual = event.key === 'Home' || (event.key !== 'End' && !manual);
-  selectMode(selectManual); get(selectManual ? 'mode-manual' : 'mode-wallet').focus();
-});
 function readDevice(selection: Promise<USBDevice>): void {
   invalidateContext(); discovery = undefined; device = undefined;
   const abort = new AbortController(); controller = abort; refreshAccount(); status.textContent = '正在读取设备账户…';
@@ -259,16 +264,27 @@ reconnect.addEventListener('click', () => readDevice(navigator.usb.getDevices().
   if (matches.length !== 1) throw new Error('请使用连接按钮选择一把 CanoKey'); return matches[0]!;
 })));
 cancel.addEventListener('click', () => { controller?.abort(); });
-function runWallet(operation: () => Promise<void>): void { void operation().catch((error) => { wcStatus.textContent = error instanceof Error ? error.message : '连接操作失败'; }); }
+function runWallet(operation: () => Promise<void>): void {
+  void operation().catch((error) => {
+    wcStatus.textContent = error instanceof Error ? error.message : '连接操作失败';
+    get('wc-connection-status').textContent = wcStatus.textContent;
+  }).finally(refresh);
+}
+async function closeRequest(): Promise<void> {
+  if (controller || submissionBusy) return;
+  if (requestPending) await wallet.reject();
+  requestDialog.close();
+}
+requestClose.addEventListener('click', () => runWallet(closeRequest));
+requestDialog.addEventListener('cancel', (event) => { event.preventDefault(); runWallet(closeRequest); });
+get('wc-record').addEventListener('click', showRequest);
 connectionDialog = mountWalletPairing(async (uri) => {
-  selectMode(false);
   await wallet.pair(uri);
 }, () => wallet.invalidate());
 get('wc-open').addEventListener('click', () => { if (coin !== 'bitcoin' && __WALLETCONNECT__) connectionDialog?.open(); });
 get('wc-disconnect').addEventListener('click', () => wallet.invalidate());
 wcApprove.addEventListener('click', () => { wcApprove.disabled = true; runWallet(async () => { try { await wallet.approve(); } finally { wcApprove.disabled = false; } }); });
 wcReject.addEventListener('click', () => runWallet(() => wallet.reject()));
-wcConfirm.addEventListener('change', () => { wcSign.disabled = !wcConfirm.checked || !!controller || wcRpcBusy || !wcSignable; });
 wcRpcRead.addEventListener('click', () => {
   const endpoint = wcRpcEndpoint.value ? wcRpcEndpoints[Number(wcRpcEndpoint.value)] : undefined;
   if (endpoint && !wcRpcBusy) runWallet(() => wallet.readRpc(endpoint));
@@ -276,7 +292,7 @@ wcRpcRead.addEventListener('click', () => {
 wcRpcCancel.addEventListener('click', () => runWallet(() => wallet.reject()));
 wcRpcEndpoint.addEventListener('change', () => wallet.changeRpcSource());
 wcSign.addEventListener('click', () => {
-  if (!wcConfirm.checked || controller || wcRpcBusy || !wcSignable) return;
+  if (controller || wcRpcBusy || !wcSignable) return;
   const pin = new TextEncoder().encode(wcPin.value); wcPin.value = '';
   if (pin.length < 6 || pin.length > 64) { pin.fill(0); wcStatus.textContent = '用户 PIN 需要 6–64 字节'; return; }
   wcSign.disabled = true; runWallet(() => wallet.sign(pin));

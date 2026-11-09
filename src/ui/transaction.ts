@@ -11,15 +11,14 @@ import { executeReviewedTransaction } from '../signing/execute';
 import type { DeviceAccess, Review } from '../signing/execute';
 import { prepareSolanaMessage, prepareSolanaTextMessage } from '../chains/solana/message';
 import { mountBroadcastApp } from './broadcast';
+import { detectEvmInput, detectSolanaInput } from './signing-input';
 
 export function mountTransactionApp(access: DeviceAccess, chain: 'evm' | 'bitcoin' | 'solana'): { invalidate(): void; refresh(): void } {
   const get = <T extends HTMLElement>(id: string) => document.getElementById(chain === 'evm' ? id : id.replace('transaction-', chain + '-')) as T;
   const source = get<HTMLTextAreaElement>('transaction-source');
-  const kind = chain !== 'bitcoin' ? get<HTMLSelectElement>('transaction-kind') : undefined;
   const network = chain === 'evm' ? undefined : get<HTMLSelectElement>('transaction-network');
   const encoding = get<HTMLSelectElement>('transaction-encoding');
   const outputEncoding = get<HTMLSelectElement>('transaction-output-encoding');
-  const format = get<HTMLSelectElement>('transaction-format');
   const snapshots = get<HTMLTextAreaElement>('transaction-snapshots');
   const rpcPane = chain !== 'bitcoin' ? get('transaction-rpc') : undefined;
   const rpcEndpoint = chain !== 'bitcoin' ? get<HTMLSelectElement>('transaction-rpc-endpoint') : undefined;
@@ -28,13 +27,13 @@ export function mountTransactionApp(access: DeviceAccess, chain: 'evm' | 'bitcoi
   const broadcast = chain !== 'bitcoin' ? mountBroadcastApp(chain) : undefined;
   const encodeResult = (bytes: Uint8Array) => outputEncoding.value === 'hex' ? bytesToHex(bytes)
     : outputEncoding.value === 'base58' ? base58.encode(bytes) : base64.encode(bytes);
+  let resultIsMessage = false;
   let resultBytes: Uint8Array | undefined;
   let finalizedBytes: Uint8Array | undefined;
   const finalize = get<HTMLButtonElement>('transaction-finalize');
   const slot = get<HTMLSelectElement>('transaction-slot');
   const file = get<HTMLInputElement>('transaction-file');
   const parse = get<HTMLButtonElement>('transaction-parse');
-  const confirm = get<HTMLInputElement>('transaction-confirm');
   const pin = get<HTMLInputElement>('transaction-pin');
   const sign = get<HTMLButtonElement>('transaction-sign');
   const output = get<HTMLTextAreaElement>('transaction-result');
@@ -56,7 +55,6 @@ export function mountTransactionApp(access: DeviceAccess, chain: 'evm' | 'bitcoi
     rpcController?.abort(); rpcController = undefined;
     if (signing) access.cancel();
     review = undefined;
-    confirm.checked = false;
     pin.value = '';
     reviewRows.replaceChildren();
     approvalPane.hidden = true; resultPane.hidden = true;
@@ -67,7 +65,21 @@ export function mountTransactionApp(access: DeviceAccess, chain: 'evm' | 'bitcoi
     download.disabled = true;
     sign.disabled = true;
   }
+  function detectInput() {
+    return chain === 'solana' ? detectSolanaInput(source.value, encoding.value)
+      : { kind: chain === 'evm' ? detectEvmInput(source.value) : 'transaction', format: 'transaction' };
+  }
   function refresh(): void {
+    let method = '';
+    try { method = detectInput().kind; } catch { /* Incomplete input stays unavailable for RPC. */ }
+    if (chain !== 'bitcoin') {
+      get('transaction-kind-badge').textContent = method === 'transaction' ? '自动识别 · 交易' : method ? '自动识别 · 消息' : '自动识别';
+      if (chain === 'solana') {
+        const message = method !== 'transaction';
+        snapshots.hidden = get('transaction-snapshots-label').hidden = message;
+        outputEncoding.hidden = get('transaction-output-encoding-label').hidden = message;
+      }
+    }
     const previous = access.selectedSlot?.(chain) ?? slot.value;
     slot.replaceChildren();
     for (const key of access.slots().filter((key) => key.algorithm === (chain === 'solana' ? 'ed25519' : 'secp256k1'))) {
@@ -80,14 +92,14 @@ export function mountTransactionApp(access: DeviceAccess, chain: 'evm' | 'bitcoi
     }
     if (Array.from(slot.options).some((item) => item.value === previous)) slot.value = previous;
     parse.disabled = signing || !!rpcController || access.busy() || slot.options.length === 0;
-    sign.disabled = signing || access.busy() || !review?.signable || !confirm.checked;
+    sign.disabled = signing || access.busy() || !review?.signable;
     pin.disabled = signing || access.busy();
     if (rpcPane && rpcEndpoint && rpcRead) {
-      rpcPane.hidden = !__WALLETCONNECT__ || kind?.value !== 'transaction';
+      rpcPane.hidden = !__WALLETCONNECT__ || method !== 'transaction';
       const previousEndpoint = rpcEndpoint.value;
       rpcEndpoint.replaceChildren();
       let rpcChainId = '';
-      if (chain === 'evm' && kind?.value === 'transaction') {
+      if (chain === 'evm' && method === 'transaction') {
         try { rpcChainId = evmTransactionChainId(source.value); } catch { /* Wait for complete signing content. */ }
       }
       const endpoints = chain === 'evm' ? __EVM_RPC_ENDPOINTS__ : __SOLANA_RPC_ENDPOINTS__;
@@ -107,55 +119,13 @@ export function mountTransactionApp(access: DeviceAccess, chain: 'evm' | 'bitcoi
       rpcCancel!.disabled = !rpcController;
     }
   }
-  for (const control of [source, ...(network ? [network] : []), slot, ...(kind ? [kind] : []), ...(encoding ? [encoding] : []), ...(format ? [format] : []), ...(snapshots ? [snapshots] : []), ...(rpcEndpoint ? [rpcEndpoint] : [])]) control.addEventListener('input', () => {
+  for (const control of [source, ...(network ? [network] : []), slot, ...(encoding ? [encoding] : []), ...(snapshots ? [snapshots] : []), ...(rpcEndpoint ? [rpcEndpoint] : [])]) control.addEventListener('input', () => {
     invalidate(); refresh();
   });
-  if (kind && chain === 'evm') {
-    const descriptions = {
-      transaction: { label: '交易 JSON / Hex', badge: 'type 0 · 1 · 2',
-        help: get('transaction-help').textContent ?? '', placeholder: source.placeholder },
-      personal_sign: { label: '消息正文（UTF-8）', badge: 'EIP-191',
-        help: '输入完整可阅读消息。审查会显示转义正文和精确字节。签名可能被用于登录或授权，请核对网站、账户和用途。',
-        placeholder: '输入需要签署的完整消息' },
-      eth_signTypedData_v4: { label: 'EIP-712 JSON', badge: 'EIP-712 v4',
-        help: '导入包含 types、primaryType、domain 和 message 的完整 JSON。网络从 Domain chainId 读取，所有字段均在签名前展示。',
-        placeholder: '{"types":{"Notice":[{"name":"contents","type":"string"}]},"primaryType":"Notice","domain":{"chainId":"1"},"message":{"contents":"Hello"}}' },
-    };
-    kind.addEventListener('change', () => {
-      const description = descriptions[kind.value as keyof typeof descriptions];
-      if (!description) return;
-      get('transaction-source-label').textContent = description.label;
-      get('transaction-kind-badge').textContent = description.badge;
-      get('transaction-help').textContent = description.help;
-      source.placeholder = description.placeholder;
-      parse.textContent = kind.value === 'transaction' ? '解析并审查交易' : '解析并审查消息';
-      status.textContent = '请导入并审查完整签名内容。';
-    });
-  }
-  if (kind && chain === 'solana') {
-    const transactionHelp = get('transaction-help').textContent;
-    kind.addEventListener('change', () => {
-      const message = kind.value !== 'transaction', text = kind.value === 'offchain-text';
-      for (const control of [format, get('transaction-format-label'), snapshots, get('transaction-snapshots-label')]) control.hidden = message;
-      for (const control of [encoding, get('transaction-encoding-label')]) control.hidden = text;
-      for (const control of [outputEncoding, get('transaction-output-encoding-label')]) control.hidden = message;
-      get('transaction-kind-badge').textContent = message ? 'Solana offchain' : 'legacy · v0 · v1';
-      get('transaction-help').textContent = text ? '输入完整可阅读正文，最多 1281 字节。将生成绑定当前 signer 的 Solana offchain v1 消息，审查展示精确签名字节。请在正文中写明网站、nonce、时间和用途。'
-        : message ? '导入标准 Solana offchain v0 / v1 消息，按原始字节签名。所列 signer、正文与域分离格式会完整核对，原始文本和交易字节请使用对应入口。' : transactionHelp;
-      get('transaction-source-label').textContent = text ? '离链消息正文（UTF-8）' : message ? 'Solana offchain Base64 / Base58 / Hex' : 'Solana Base64 / Base58 / Hex';
-      get('transaction-file-label').textContent = text ? '导入消息正文文本' : message ? '导入离链消息文件' : '导入交易文件';
-      source.placeholder = text ? '写明网站、账户、nonce、时间和本次签名用途' : message ? '粘贴已明确编码的 Solana offchain 消息' : '粘贴已明确编码的 Solana 交易或消息';
-      file.accept = text ? '.txt' : '.bin,.hex,.txt,.base64,.base58';
-      parse.textContent = message ? '解析并审查离链消息' : '解析并审查交易';
-      status.textContent = '请导入并审查完整签名内容。';
-      download.textContent = message ? '下载消息与签名 JSON' : '下载二进制 transaction';
-    });
-  }
   outputEncoding?.addEventListener('change', () => {
     if (resultBytes) output.value = encodeResult(resultBytes);
   });
-  confirm.addEventListener('change', refresh);
-  for (const control of [source, network, file, encoding, format, snapshots]) {
+  for (const control of [source, network, file, encoding, snapshots]) {
     if (control) control.addEventListener('change', () => { if (!signing) refresh(); });
   }
   file.addEventListener('change', () => {
@@ -167,18 +137,22 @@ export function mountTransactionApp(access: DeviceAccess, chain: 'evm' | 'bitcoi
     const limit = chain === 'bitcoin' ? 2097152 : chain === 'solana' ? 10000 : 262144;
     if (selected.size > limit) { status.textContent = '文件超出当前链的大小限制'; return; }
     const read = async () => {
-      if (chain === 'evm' || kind?.value === 'offchain-text') return { text: await selected.text(), binary: false };
+      if (chain === 'evm') return { text: await selected.text(), binary: false };
       const bytes = new Uint8Array(await selected.arrayBuffer());
       const binary = chain === 'solana' ? encoding.value === 'binary' : bytes.length >= 5 && bytesToHex(bytes.slice(0, 5)) === '70736274ff';
-      return { text: binary ? base64.encode(bytes) : new TextDecoder().decode(bytes), binary };
+      return { text: binary ? base64.encode(bytes) : new TextDecoder('utf-8', { fatal: true }).decode(bytes), binary };
     };
     void read().then(({ text, binary }) => {
       if (request !== fileGeneration || revision !== generation || signing) return;
+      if (binary && chain === 'solana' && detectSolanaInput(text, 'base64').kind === 'offchain-text') throw new Error('二进制文件未包含可识别的 Solana 数据');
       invalidate();
       source.value = text;
       if (binary) encoding.value = 'base64';
+      refresh();
       status.textContent = '文件已载入，请解析并审查。';
-    }).catch(() => { status.textContent = '读取文件失败'; });
+    }).catch((error) => {
+      if (request === fileGeneration && revision === generation) status.textContent = error instanceof Error ? error.message : '读取文件失败';
+    });
   });
   function renderReview(selected: Review): void {
     for (const [label, value] of selected.rows) {
@@ -189,14 +163,18 @@ export function mountTransactionApp(access: DeviceAccess, chain: 'evm' | 'bitcoi
     status.textContent = selected.signable ? '请逐项核对完整签名内容、账户、网络和授权效果，再确认签名。' : '只读审查完成，当前交易无法签名。';
   }
   rpcRead?.addEventListener('click', () => {
-    if (!__WALLETCONNECT__ || chain === 'bitcoin' || kind?.value !== 'transaction' || access.busy() || signing) return;
+    let detected;
+    try { detected = detectInput(); } catch (error) {
+      status.textContent = error instanceof Error ? error.message : '无法识别签名内容'; return;
+    }
+    if (!__WALLETCONNECT__ || chain === 'bitcoin' || detected.kind !== 'transaction' || access.busy() || signing) return;
     const key = access.slots().find((key) => key.slot === slot.value);
     const endpoints = chain === 'evm' ? __EVM_RPC_ENDPOINTS__ : __SOLANA_RPC_ENDPOINTS__;
     const endpoint = rpcEndpoint!.value ? endpoints[Number(rpcEndpoint!.value)] : undefined;
     if (!key || !endpoint) return;
     invalidate();
     const abort = new AbortController(), revision = generation; rpcController = abort;
-    const input = { source: source.value, publicKeyHex: key.publicKeyHex, network: (network?.value ?? ''), encoding: encoding?.value ?? '', format: format?.value ?? '' };
+    const input = { source: source.value, publicKeyHex: key.publicKeyHex, network: (network?.value ?? ''), encoding: encoding?.value ?? '', format: detected.format };
     status.textContent = '正在核对 RPC 网络、读取上下文并检查原始交易…'; refresh();
     void (async () => {
       try {
@@ -225,19 +203,19 @@ export function mountTransactionApp(access: DeviceAccess, chain: 'evm' | 'bitcoi
     try {
       const key = access.slots().find((key) => key.slot === slot.value);
       if (!key) throw new Error('请先读取 CanoKey 的对应算法槽位');
-      const method = kind?.value;
+      const { kind: method, format } = detectInput();
       if (chain === 'evm') review = method === 'personal_sign' || method === 'eth_signTypedData_v4'
         ? prepareEvmMessage(method, source.value, key.publicKeyHex) : prepareEvmTransaction(source.value, key.publicKeyHex);
       else if (chain === 'bitcoin') review = prepareBitcoinTransaction(source.value, key.publicKeyHex, (network?.value ?? ''), encoding.value);
       else if (method === 'offchain-text') review = prepareSolanaTextMessage(source.value, key.publicKeyHex, (network?.value ?? ''));
       else if (method === 'offchain-import') review = prepareSolanaMessage(source.value, key.publicKeyHex, (network?.value ?? ''), encoding.value);
-      else review = prepareSolanaTransaction(source.value, key.publicKeyHex, (network?.value ?? ''), encoding.value, format.value, snapshots.value || '[]');
+      else review = prepareSolanaTransaction(source.value, key.publicKeyHex, (network?.value ?? ''), encoding.value, format, snapshots.value || '[]');
       renderReview(review);
     } catch (error) { status.textContent = error instanceof Error ? error.message : '解析失败'; }
     refresh();
   });
   sign.addEventListener('click', () => {
-    if (!review || !confirm.checked || signing || access.busy()) return;
+    if (!review || signing || access.busy()) return;
     const selectedReview = review;
     const key = access.slots().find((key) => key.slot === slot.value);
     if (!key) return;
@@ -273,6 +251,8 @@ export function mountTransactionApp(access: DeviceAccess, chain: 'evm' | 'bitcoi
           output.value = result.output;
           get('transaction-result-label').textContent = 'kind' in selectedReview ? '已验证的消息签名 Hex（r / s / v）' : '已验证的签名交易 Hex';
         }
+        resultIsMessage = 'kind' in selectedReview;
+        if (chain === 'solana') download.textContent = resultIsMessage ? '下载消息与签名 JSON' : '下载二进制 transaction';
         resultPane.hidden = false;
         download.disabled = false;
         if (selectedReview.chain !== 'bitcoin' && !('kind' in selectedReview)) broadcast?.setResult(selectedReview, result.output);
@@ -291,7 +271,6 @@ export function mountTransactionApp(access: DeviceAccess, chain: 'evm' | 'bitcoi
         clearTimeout(rpcExpiry);
         review = undefined;
         approvalPane.hidden = true;
-        confirm.checked = false;
         signing = false;
         refresh();
       }
@@ -311,7 +290,7 @@ export function mountTransactionApp(access: DeviceAccess, chain: 'evm' | 'bitcoi
     const link = document.createElement('a');
     link.href = url; link.download = resultBytes ? chain === 'bitcoin' ? 'signed-bitcoin.psbt' : 'signed-solana-transaction.bin'
       : chain === 'solana' ? 'signed-solana-message.json'
-        : kind?.value === 'transaction' ? 'signed-evm-transaction.hex' : 'signed-evm-message-signature.hex';
+        : resultIsMessage ? 'signed-evm-message-signature.hex' : 'signed-evm-transaction.hex';
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   });

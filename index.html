@@ -6,6 +6,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; media-src 'self' blob:; connect-src wss://relay.walletconnect.org https://relay.walletconnect.org https://verify.walletconnect.com https://verify.walletconnect.org; object-src 'none'; base-uri 'none'; form-action 'none'" />
   <meta name="referrer" content="no-referrer" />
   <link rel="stylesheet" href="/src/ui/style.css" />
+  <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
   <title>CanoKeySigner</title>
 </head>
 <body>
@@ -13,9 +14,9 @@
   <header class="masthead"><a class="brand" href="./">◈ <span>CanoKeySigner</span></a><div class="device-actions"><span id="connection" class="badge">未连接设备</span><button id="connect" type="button">连接 CanoKey</button><button id="reconnect" class="secondary" type="button">重新读取</button><button id="cancel" class="secondary" type="button" disabled>取消操作</button></div></header>
   <section class="intro"><p class="eyebrow">YOUR KEY. YOUR SIGNATURE.</p><h1>选择账户，开始签名。</h1><p>使用 CanoKey 现有密钥，审查并签署每一笔交易。</p></section>
   <nav class="coins" aria-label="选择币种">
-    <button class="coin selected" data-coin="evm" type="button" aria-pressed="true"><span class="coin-icon eth">Ξ</span><span>Ethereum / EVM<small>ETH 与 EVM 网络</small></span><span class="coin-check">✓</span></button>
-    <button class="coin" data-coin="bitcoin" type="button" aria-pressed="false"><span class="coin-icon btc">₿</span><span>Bitcoin<small>BTC</small></span><span class="coin-check">✓</span></button>
-    <button class="coin" data-coin="solana" type="button" aria-pressed="false"><span class="coin-icon sol">◎</span><span>Solana<small>SOL 与 SPL Token</small></span><span class="coin-check">✓</span></button>
+    <button class="coin selected" data-coin="evm" type="button" aria-pressed="true"><span class="coin-icon eth"><svg viewBox="0 0 32 32" aria-hidden="true"><path fill="#c5ccff" d="M16 2 7 17l9 5 9-5z"/><path fill="#858fce" d="M16 2v20l9-5z"/><path fill="#c5ccff" d="m7 19 9 11 9-11-9 5z"/><path fill="#858fce" d="M16 24v6l9-11z"/></svg></span><span>Ethereum / EVM<small>ETH 与 EVM 网络</small></span><span class="coin-check">✓</span></button>
+    <button class="coin" data-coin="bitcoin" type="button" aria-pressed="false"><span class="coin-icon btc"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="16" fill="#f7931a"/><path fill="#fff" d="M23.2 13.7c.3-2.1-1.3-3.2-3.5-4l.7-2.8-1.7-.4-.7 2.7-1.4-.3.7-2.8-1.7-.4-.7 2.8-1.1-.3-2.3-.6-.5 1.8 1.2.3c.7.2.8.6.8 1l-.8 3.2.2.1h-.2l-1.1 4.4c-.1.2-.3.6-.8.4l-1.2-.3-.8 1.9 2.2.6 1.2.3-.7 2.8 1.7.4.7-2.8 1.4.4-.7 2.8 1.7.4.7-2.8c2.9.5 5.1.3 6-2.3.7-2.1 0-3.3-1.5-4.1 1.1-.3 1.9-1 2.2-2.4Zm-4 5.6c-.5 2.1-4.1 1-5.3.7l.9-3.7c1.2.3 4.9.9 4.4 3Zm.5-5.6c-.5 1.9-3.4.9-4.4.7l.8-3.4c1 .3 4.1.7 3.6 2.7Z"/></svg></span><span>Bitcoin<small>BTC</small></span><span class="coin-check">✓</span></button>
+    <button class="coin" data-coin="solana" type="button" aria-pressed="false"><span class="coin-icon sol"><svg viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="sol-gradient" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#9945ff"/><stop offset="1" stop-color="#14f195"/></linearGradient></defs><path fill="url(#sol-gradient)" d="m7 6-5 5h23l5-5zm-5 8 5 5h23l-5-5zm5 8-5 5h23l5-5z"/></svg></span><span>Solana<small>SOL 与 SPL Token</small></span><span class="coin-check">✓</span></button>
   </nav>
   <div class="app-layout">
     <aside class="panel account-panel"><div class="panel-heading"><h2>签名账户</h2><span class="badge">OpenPGP</span></div>
@@ -25,32 +26,29 @@
       <div class="address-box"><span>当前账户</span><p id="current-address">等待连接 CanoKey</p><button class="text-button" id="copy-address" type="button" disabled>复制地址</button></div>
       <p id="account-detail" class="subtle">EVM 与 Bitcoin 使用 secp256k1，Solana 使用 Ed25519。</p>
       <p id="status" class="status" role="status" aria-live="polite">准备连接设备。</p>
-      <div id="wc-sidebar" class="wallet-sidebar"><button id="wc-open" type="button">连接 WalletConnect</button><button id="wc-disconnect" class="text-button" type="button">断开连接</button></div>
+      <div id="wc-sidebar" class="wallet-sidebar"><button id="wc-open" type="button">连接 WalletConnect</button><p id="wc-connection-status" role="status" aria-live="polite"></p><button id="wc-record" class="secondary" type="button" hidden>查看提交记录</button><button id="wc-disconnect" class="text-button" type="button">断开连接</button></div>
     </aside>
     <section class="panel work-panel">
-      <div class="mode-tabs" role="tablist" aria-label="签名方式"><button id="mode-manual" role="tab" aria-selected="true" aria-controls="manual-pane" type="button">手动签名</button><button id="mode-wallet" role="tab" tabindex="-1" aria-selected="false" aria-controls="wallet-pane" type="button">WalletConnect</button></div>
-      <div id="manual-pane" role="tabpanel" aria-labelledby="mode-manual">
+
+      <div id="manual-pane">
       <section class="transaction-panel" id="manual-evm">
         <div class="panel-heading"><h2>手动签名 / EVM</h2><span class="badge" id="transaction-kind-badge">type 0 · 1 · 2</span></div>
-        <p id="transaction-help">支持原生币转账、ERC-20 转账与授权、ERC-721 / ERC-1155 常用转移与授权。相同函数编码会展示多种资产解释，请核对目标合约。导入交易 JSON 或序列化 Hex，金额使用最小单位整数。已签名交易可只读检查。</p>
-        <label for="transaction-kind">签名内容</label>
-        <select id="transaction-kind"><option value="transaction">交易</option><option value="personal_sign">可阅读消息 · personal_sign</option><option value="eth_signTypedData_v4">结构化消息 · EIP-712 v4</option></select>
+        <p id="transaction-help">自动识别交易 JSON / Hex、EIP-712 结构化消息及可阅读文本。支持原生币转账、ERC-20 转账与授权、ERC-721 / ERC-1155 常用转移与授权。相同函数编码会展示多种资产解释，请核对目标合约。导入交易 JSON 或序列化 Hex，金额使用最小单位整数。已签名交易可只读检查。</p>
 
         <select id="transaction-slot" hidden><option>请先读取设备</option></select>
         <label for="transaction-file">导入文件</label>
         <input id="transaction-file" type="file" accept=".json,.hex,.txt" />
-        <label id="transaction-source-label" for="transaction-source">交易 JSON / Hex</label>
+        <label id="transaction-source-label" for="transaction-source">交易 / 消息内容</label>
         <textarea id="transaction-source" rows="9" spellcheck="false" placeholder='{"type":"2","chainId":"1","nonce":"0","gasLimit":"21000","to":"0x...","value":"0","data":"0x","maxFeePerGas":"2000000000","maxPriorityFeePerGas":"1000000000","accessList":[]}'></textarea>
         <details id="transaction-rpc"><summary>可选 RPC 读取与执行检查</summary>
           <p>核对端点与交易 chainId，读取 nonce、余额和区块费用，并发送当前交易内容进行执行检查。所选端点会收到账户地址、金额与 calldata。</p>
           <label for="transaction-rpc-endpoint">本次使用的 RPC 来源</label><select id="transaction-rpc-endpoint"></select>
           <div class="actions"><button id="transaction-rpc-read" class="secondary" type="button" disabled>读取 RPC 上下文并检查执行</button><button id="transaction-rpc-cancel" class="secondary" type="button" disabled>取消 RPC 读取</button></div>
         </details>
-        <div class="actions"><button id="transaction-parse" type="button" disabled>解析并审查交易</button></div>
-        <p id="transaction-status" role="status" aria-live="polite">连接 CanoKey 后即可导入并审查交易。</p>
+        <div class="actions"><button id="transaction-parse" type="button" disabled>自动识别并审查</button></div>
+        <p id="transaction-status" role="status" aria-live="polite">连接 CanoKey 后即可导入并审查签名内容。</p>
         <dl id="transaction-review" class="report"></dl>
         <div id="transaction-approval" hidden>
-        <label><input id="transaction-confirm" type="checkbox" /> <span id="transaction-confirm-text">我已核对完整签名内容、账户、网络和授权用途，批准本次签名。</span></label>
         <label for="transaction-pin">OpenPGP 用户 PIN</label>
         <input id="transaction-pin" type="password" autocomplete="off" spellcheck="false" />
         <div class="actions"><button id="transaction-sign" type="button" disabled>批准并硬件签名</button></div>
@@ -83,11 +81,10 @@
         <input id="bitcoin-file" type="file" accept=".psbt,.hex,.txt,.base64" />
         <label for="bitcoin-source">PSBT Base64 / Hex</label>
         <textarea id="bitcoin-source" rows="9" spellcheck="false" placeholder="粘贴 PSBT，或选择文件"></textarea>
-        <div class="actions"><button id="bitcoin-parse" type="button" disabled>解析并审查交易</button></div>
-        <p id="bitcoin-status" role="status" aria-live="polite">连接 CanoKey 后即可导入并审查交易。</p>
+        <div class="actions"><button id="bitcoin-parse" type="button" disabled>自动识别并审查</button></div>
+        <p id="bitcoin-status" role="status" aria-live="polite">连接 CanoKey 后即可导入并审查签名内容。</p>
         <dl id="bitcoin-review" class="report"></dl>
         <div id="bitcoin-approval" hidden>
-        <label><input id="bitcoin-confirm" type="checkbox" /> 我已核对所有输入、输出、待签输入清单、网络及矿工费，批准本次签名。</label>
         <label for="bitcoin-pin">OpenPGP 用户 PIN</label>
         <input id="bitcoin-pin" type="password" autocomplete="off" spellcheck="false" />
         <div class="actions"><button id="bitcoin-sign" type="button" disabled>批准并硬件签名</button></div>
@@ -102,17 +99,15 @@
       </section>
       <section class="transaction-panel" id="manual-solana" hidden>
         <div class="panel-heading"><h2>手动签名 / Solana</h2><span class="badge" id="solana-kind-badge">legacy · v0 · v1</span></div>
-        <p id="solana-help">导入 transaction 或 message，完整展示 signer、账户权限、blockhash 和指令，验证并保留已有签名。v1 展示消息头资源配置，完整消息不超过 1331 字节时可签名，超出时仅供审查。支持 SPL Token 及已知 Token-2022 操作，包括显式手续费转移、手续费配置与提取、Memo 要求和 CPI Guard。Token-2022 转移需使用 TransferCheckedWithFee 声明预期手续费。未解析扩展或额外 Hook 账户会拒签。</p>
-        <label for="solana-kind">签名内容</label><select id="solana-kind"><option value="transaction">交易</option><option value="offchain-text">可阅读离链消息 · 生成 offchain v1</option><option value="offchain-import">已编码离链消息 · offchain v0 / v1</option></select>
+        <p id="solana-help">自动识别已编码 transaction / message、标准 offchain 消息及可阅读文本。可阅读文本将生成 offchain v1 消息。导入交易后，完整展示 signer、账户权限、blockhash 和指令，验证并保留已有签名。v1 展示消息头资源配置，完整消息不超过 1331 字节时可签名，超出时仅供审查。支持 SPL Token 及已知 Token-2022 操作，包括显式手续费转移、手续费配置与提取、Memo 要求和 CPI Guard。Token-2022 转移需使用 TransferCheckedWithFee 声明预期手续费。未解析扩展或额外 Hook 账户会拒签。</p>
 
         <select id="solana-slot" hidden><option>请先读取设备</option></select>
         <label class="network-label" id="solana-network-label" for="solana-network">确认 Solana cluster</label>
         <select id="solana-network"><option value="mainnet-beta">Solana Mainnet Beta</option><option value="devnet">Solana Devnet</option><option value="testnet">Solana Testnet</option></select>
-        <label id="solana-format-label" for="solana-format">输入格式</label><select id="solana-format"><option value="transaction">Serialized transaction</option><option value="message">Serialized message</option></select>
         <label id="solana-encoding-label" for="solana-encoding">粘贴 / 文本文件编码</label><select id="solana-encoding"><option value="base64">Base64</option><option value="hex">Hex</option><option value="base58">Base58</option><option value="binary">二进制文件（明确选择后导入）</option></select>
         <label id="solana-file-label" for="solana-file">导入交易文件</label>
         <input id="solana-file" type="file" accept=".bin,.hex,.txt,.base64,.base58" />
-        <label id="solana-source-label" for="solana-source">Solana Base64 / Base58 / Hex</label>
+        <label id="solana-source-label" for="solana-source">交易 / 离链消息内容</label>
         <textarea id="solana-source" rows="9" spellcheck="false" placeholder="粘贴已明确编码的 Solana 交易或消息"></textarea>
         <label id="solana-snapshots-label" for="solana-snapshots">v0 ALT 离线快照 JSON（需要时提供）</label><textarea id="solana-snapshots" rows="5" spellcheck="false" placeholder='[{"address":"...","owner":"AddressLookupTab1e1111111111111111111111111","dataBase64":"...","source":"导出来源","contextSlot":"123","network":"mainnet-beta"}]'></textarea>
         <details id="solana-rpc"><summary>可选 RPC 读取与模拟</summary>
@@ -120,11 +115,10 @@
           <label for="solana-rpc-endpoint">本次使用的 RPC 来源</label><select id="solana-rpc-endpoint"></select>
           <div class="actions"><button id="solana-rpc-read" class="secondary" type="button" disabled>读取 RPC 上下文并模拟</button><button id="solana-rpc-cancel" class="secondary" type="button" disabled>取消 RPC 读取</button></div>
         </details>
-        <div class="actions"><button id="solana-parse" type="button" disabled>解析并审查交易</button></div>
-        <p id="solana-status" role="status" aria-live="polite">连接 CanoKey 后即可导入并审查交易。</p>
+        <div class="actions"><button id="solana-parse" type="button" disabled>自动识别并审查</button></div>
+        <p id="solana-status" role="status" aria-live="polite">连接 CanoKey 后即可导入并审查签名内容。</p>
         <dl id="solana-review" class="report"></dl>
         <div id="solana-approval" hidden>
-        <label><input id="solana-confirm" type="checkbox" /> 我已核对 signer、完整签名字节、全部审查内容、授权用途和外部网络上下文，批准本次签名。</label>
         <label for="solana-pin">OpenPGP 用户 PIN</label>
         <input id="solana-pin" type="password" autocomplete="off" spellcheck="false" />
         <div class="actions"><button id="solana-sign" type="button" disabled>批准并硬件签名</button></div>
@@ -147,8 +141,14 @@
         </section>
       </section>
       </div>
-      <div id="wallet-pane" role="tabpanel" aria-labelledby="mode-wallet" hidden>
-        <div class="panel-heading"><h2>WalletConnect 请求</h2><span class="badge">WalletConnect v2</span></div>
+
+    </section>
+  </div>
+  <footer><span>本地审查 · 硬件签名 · 签后验签</span><span>CanoKeySigner __CANOKEY_VERSION__ · OpenPGP / CanoKey 3.0.3</span></footer>
+</main>
+<dialog id="wc-request-dialog" aria-labelledby="wc-request-title">
+  <div class="wallet-dialog-content">
+        <div class="panel-heading"><h2 id="wc-request-title">WalletConnect 请求</h2><button id="wc-request-close" class="text-button" type="button" aria-label="关闭请求窗口">关闭 ✕</button></div>
         <p>通过左侧 WalletConnect 入口连接 dApp，授权当前账户。每次交易或消息请求都需要单独审查与硬件签名。EVM 与 Solana 提交请求需主动读取 RPC 并审查费用与执行检查，硬件签名后单独批准提交。EVM 展示缺省字段补全，Solana 解析 ALT 并保留原始消息、blockhash 与已有协签。</p>
         <p class="subtle">Portions © 2025 Reown, Inc. All Rights Reserved · <a href="%BASE_URL%WALLETCONNECT-LICENSE.md" target="_blank" rel="noopener">WalletConnect 许可证</a></p>
         <p id="wc-capabilities" class="subtle"></p>
@@ -161,7 +161,7 @@
           <p id="wc-rpc-source" class="subtle"></p>
           <div class="actions"><button id="wc-rpc-read" class="secondary" type="button" disabled>为本次请求读取 RPC 并检查</button><button id="wc-rpc-cancel" class="secondary" type="button" disabled>取消读取并拒绝请求</button></div>
         </details>
-        <div id="wc-sign-form" hidden><label class="confirmation"><input id="wc-confirm" type="checkbox" /> 我已核对完整请求、账户和授权用途，批准本次签名。</label><label for="wc-pin">OpenPGP 用户 PIN</label><input id="wc-pin" type="password" autocomplete="off" /><div class="actions"><button id="wc-sign" type="button" disabled>确认并硬件签名</button></div></div>
+        <div id="wc-sign-form" hidden><label for="wc-pin">OpenPGP 用户 PIN</label><input id="wc-pin" type="password" autocomplete="off" /><div class="actions"><button id="wc-sign" type="button" disabled>确认并硬件签名</button></div></div>
         <details id="wc-alt-context" hidden><summary>Solana v0 地址查找表上下文</summary><p>含 ALT 的请求需要完整快照，按手动签名相同规则审查。</p><textarea id="wc-snapshots" rows="4" placeholder="ALT 快照 JSON" spellcheck="false"></textarea></details>
         <section id="wc-submission-pane" hidden>
           <div class="panel-heading"><h2>提交当前请求交易</h2><span class="badge">独立批准</span></div>
@@ -172,11 +172,8 @@
           <p id="wc-submission-status" role="status" aria-live="polite"></p>
           <div class="actions"><button id="wc-submission-save" type="button" class="secondary" disabled>下载状态记录</button><button id="wc-submission-close" type="button" class="secondary" disabled>结束本次记录</button></div>
         </section>
-      </div>
-    </section>
   </div>
-  <footer><span>本地审查 · 硬件签名 · 签后验签</span><span>CanoKeySigner __CANOKEY_VERSION__ · OpenPGP / CanoKey 3.0.3</span></footer>
-</main>
+</dialog>
 <dialog id="wc-dialog" aria-labelledby="wc-dialog-title">
   <div class="wallet-dialog-content">
     <div class="panel-heading"><h2 id="wc-dialog-title">连接 WalletConnect</h2><button id="wc-dialog-close" class="text-button" type="button" aria-label="关闭连接窗口">关闭 ✕</button></div>

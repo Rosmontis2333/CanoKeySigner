@@ -34,7 +34,7 @@ npm run preview -- --outDir dist-offline --port 4174 --strictPort
 2. 选择币种、已有槽位和地址。Bitcoin 另选 mainnet 或 testnet/signet，Solana 另选 cluster。EVM 链信息从交易或结构化消息内容读取。
 3. 导入完整交易或消息，选择实际编码，点击解析。逐项核对账户、接收方、金额、费用、原始内容及授权效果。
 4. 如需链上上下文，核对来源后主动读取 RPC。端点将收到相关账户和交易内容。更改输入或来源后重新审查。
-5. 勾选确认，只在本地页面填写 OpenPGP 用户 PIN。根据设备策略触摸，等待签后验签完成，再下载结果。
+5. 核对审查内容，只在本地页面填写 OpenPGP 用户 PIN，点击“批准并硬件签名”。根据设备策略触摸，等待签后验签完成，再下载结果。
 6. EVM/Solana 的广播需对已签名结果另行批准。保存交易标识和状态记录，结果不确定时使用状态查询。刷新会丢失页面内的签名结果与提交记录。
 
 错误 PIN 不会自动重试。认证退出失败、操作超时或取消后，按页面提示拔插设备并重新读取。签名期间切换账户、断开设备或退出页面会作废当前审查。
@@ -57,7 +57,9 @@ npm run preview -- --outDir dist-offline --port 4174 --strictPort
 
 ## WalletConnect 与 RPC
 
-在 EVM 或 Solana 中点击左侧“连接 WalletConnect”，在弹窗输入 dApp 的 v2 连接地址，也可点击“启动摄像头扫码”。识别后确认连接，再批准链、账户及方法，逐笔批准签名。摄像头画面在本地解析，关闭弹窗、切换账户或页面进入后台时停止采集。Project ID 内置为 `d2a8b6044c46a77b4de519960103175c`。连接批准后，每次请求仍核对会话、chainId、账户、方法和有效期。发送交易的方法还需要已配置 RPC，并要求独立批准广播。[提交操作与状态含义](docs/BROADCAST_PROTOCOL.md)
+手动签名自动识别 EVM 交易 JSON / Hex、EIP-712 JSON 和可阅读文本。Solana 自动识别所选编码下的 transaction / message、标准 offchain 消息，普通文本生成 offchain v1。纯 Hex、以 `0x` 开头或具有编码特征的输入按编码数据处理，编码数据损坏时需修正后重新解析。文件导入沿用同一识别规则。广播仍需单独批准。
+
+在 EVM 或 Solana 中点击左侧“连接 WalletConnect”，在弹窗输入 dApp 的 v2 连接地址，也可点击“启动摄像头扫码”。识别后确认连接，再通过请求弹窗批准链、账户及方法。连接后的交易与消息请求自动弹窗，逐笔审查并签名。关闭待处理请求弹窗会拒绝该请求。摄像头画面在本地解析，关闭弹窗、切换账户或页面进入后台时停止采集。Project ID 内置为 `d2a8b6044c46a77b4de519960103175c`。连接批准后，每次请求仍核对会话、chainId、账户、方法和有效期。发送交易的方法还需要已配置 RPC，并要求独立批准广播。[提交操作与状态含义](docs/BROADCAST_PROTOCOL.md)
 
 联网构建使用固定 WalletConnect relay 和 Verify 来源。RPC 默认包含 Solana 公共 cluster 端点、Ethereum Mainnet 与 Sepolia 的 PublicNode 端点。可以通过 `.env.local` 的 `CANOKEY_SOLANA_RPC_ENDPOINTS` 和 `CANOKEY_EVM_RPC_ENDPOINTS` 替换来源，设为 `[]` 可清空对应列表。端点 URL 会进入静态产物，配置与页面来源的 CORS 权限需在构建前核对。[配置格式、数据披露和上下文限制](docs/RPC_PROTOCOL.md)
 
