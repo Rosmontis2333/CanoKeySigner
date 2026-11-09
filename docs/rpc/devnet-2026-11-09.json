@@ -1,0 +1,58 @@
+{
+  "status": "passed",
+  "startedAt": "2026-11-09T07:21:27.061Z",
+  "finishedAt": "2026-11-09T07:21:30.993Z",
+  "endpoint": "https://api.devnet.solana.com",
+  "data": "dedicated synthetic public key and transaction, no hardware or signature submission",
+  "methods": [
+    "getGenesisHash",
+    "getLatestBlockhash",
+    "getMultipleAccounts",
+    "getGenesisHash",
+    "getFeeForMessage",
+    "simulateTransaction"
+  ],
+  "rows": [
+    [
+      "RPC 来源（用户选择）",
+      "Solana 公共 Devnet · https://api.devnet.solana.com"
+    ],
+    [
+      "RPC cluster 核对",
+      "devnet · genesis EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG"
+    ],
+    [
+      "RPC 信任范围",
+      "通过所选端点返回的数据核对网络与状态，尚无独立链上证明。"
+    ],
+    [
+      "RPC commitment",
+      "confirmed"
+    ],
+    [
+      "RPC 上下文 slots",
+      "ALT 无 · 费用 520304929 · 模拟 520304931"
+    ],
+    [
+      "RPC 费用（lamports）",
+      "5000"
+    ],
+    [
+      "RPC 模拟结果",
+      "模拟失败 \"InvalidAccountForFee\""
+    ],
+    [
+      "RPC 模拟消耗 CU",
+      "0"
+    ],
+    [
+      "RPC 模拟范围",
+      "按原始消息与 blockhash 模拟，未验证交易签名。模拟是补充证据，实际执行结果仍可能变化。"
+    ],
+    [
+      "RPC 上下文有效期",
+      "2026-11-09T07:23:29.281Z，重新读取或内容变化后需重新确认"
+    ]
+  ],
+  "signable": false
+}

@@ -1,0 +1,199 @@
+{
+  "status": "passed",
+  "startedAt": "2026-11-09T11:50:29.164Z",
+  "finishedAt": "2026-11-09T11:51:20.862Z",
+  "sdk": "2.26.0",
+  "relay": "wss://relay.walletconnect.org",
+  "device": "simulated OpenPGP with dedicated synthetic keys",
+  "rpc": "simulated remote state through production RPC transport and review paths",
+  "cases": [
+    {
+      "coin": "evm",
+      "method": "pair / approve",
+      "verified": true
+    },
+    {
+      "coin": "evm",
+      "method": "eth_sendTransaction",
+      "variant": "accepted",
+      "verified": true
+    },
+    {
+      "coin": "evm",
+      "method": "eth_sendTransaction",
+      "variant": "lost response / query recovery",
+      "verified": true
+    },
+    {
+      "coin": "evm",
+      "method": "eth_sendTransaction",
+      "variant": "uncertain response / error with local ID",
+      "verified": true
+    },
+    {
+      "coin": "evm",
+      "method": "eth_sendTransaction",
+      "variant": "rejected after signature",
+      "verified": true
+    },
+    {
+      "coin": "evm",
+      "method": "personal_sign",
+      "verified": true
+    },
+    {
+      "coin": "evm",
+      "method": "eth_signTypedData_v4",
+      "verified": true
+    },
+    {
+      "coin": "evm",
+      "method": "eth_signTransaction",
+      "verified": true
+    },
+    {
+      "coin": "evm",
+      "method": "eth_signTransaction",
+      "variant": "explicit RPC read / second review / original transaction",
+      "verified": true
+    },
+    {
+      "coin": "evm",
+      "method": "eth_signTransaction",
+      "variant": "setApprovalForAll(address,bool)",
+      "verified": true
+    },
+    {
+      "coin": "evm",
+      "method": "eth_signTransaction",
+      "variant": "safeBatchTransferFrom(address,address,uint256[],uint256[],bytes)",
+      "verified": true
+    },
+    {
+      "coin": "evm",
+      "method": "reject",
+      "verified": true
+    },
+    {
+      "coin": "evm",
+      "method": "disconnect",
+      "verified": true
+    },
+    {
+      "coin": "solana",
+      "method": "pair / approve",
+      "verified": true
+    },
+    {
+      "coin": "solana",
+      "method": "solana_signAndSendTransaction",
+      "variant": "legacy / accepted",
+      "verified": true
+    },
+    {
+      "coin": "solana",
+      "method": "solana_signAndSendTransaction",
+      "variant": "v0 / accepted",
+      "verified": true
+    },
+    {
+      "coin": "solana",
+      "method": "solana_signAndSendTransaction",
+      "variant": "v1 / accepted",
+      "verified": true
+    },
+    {
+      "coin": "solana",
+      "method": "solana_signAndSendTransaction",
+      "variant": "legacy / recovered",
+      "verified": true
+    },
+    {
+      "coin": "solana",
+      "method": "solana_signAndSendTransaction",
+      "variant": "legacy / unknown",
+      "verified": true
+    },
+    {
+      "coin": "solana",
+      "method": "solana_signAndSendTransaction",
+      "variant": "legacy / rejected",
+      "verified": true
+    },
+    {
+      "coin": "solana",
+      "method": "solana_getAccounts",
+      "verified": true
+    },
+    {
+      "coin": "solana",
+      "method": "solana_signMessage",
+      "variant": "offchain v0",
+      "verified": true
+    },
+    {
+      "coin": "solana",
+      "method": "solana_signMessage",
+      "variant": "offchain v1",
+      "verified": true
+    },
+    {
+      "coin": "solana",
+      "method": "solana_signTransaction",
+      "variant": "legacy / partial multisig",
+      "verified": true
+    },
+    {
+      "coin": "solana",
+      "method": "solana_signTransaction",
+      "variant": "v0 / ALT / partial multisig",
+      "verified": true
+    },
+    {
+      "coin": "solana",
+      "method": "solana_signTransaction",
+      "variant": "missing ALT / explicit RPC read / new approval",
+      "verified": true
+    },
+    {
+      "coin": "solana",
+      "method": "solana_signTransaction",
+      "variant": "Token-2022 / transferWithFeeMultisig",
+      "verified": true
+    },
+    {
+      "coin": "solana",
+      "method": "solana_signTransaction",
+      "variant": "Token-2022 / enableMemo",
+      "verified": true
+    },
+    {
+      "coin": "solana",
+      "method": "solana_signTransaction",
+      "variant": "v1 / inline resources / tail signatures / partial multisig",
+      "verified": true
+    },
+    {
+      "coin": "solana",
+      "method": "solana_signAllTransactions",
+      "variant": "legacy + v0 + v1 / whole-batch RPC / ALT / partial multisig / separate approvals",
+      "verified": true
+    },
+    {
+      "coin": "solana",
+      "method": "solana_signAllTransactions",
+      "variant": "reject after first signature / no partial response",
+      "verified": true
+    },
+    {
+      "coin": "solana",
+      "method": "reject",
+      "verified": true
+    },
+    {
+      "coin": "solana",
+      "method": "disconnect",
+      "verified": true
+    }
+  ]
+}

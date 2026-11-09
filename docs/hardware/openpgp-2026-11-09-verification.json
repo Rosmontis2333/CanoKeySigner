@@ -1,0 +1,36 @@
+{
+  "results": [
+    {
+      "record": 0,
+      "slot": "SIG",
+      "algorithm": "ed25519",
+      "caseId": "basic",
+      "messageBytes": 98,
+      "inputBytes": 98,
+      "publicKeyBytes": 32,
+      "rawSignatureBytes": 64,
+      "signatureBytes": 64,
+      "rawSignatureVerified": true,
+      "normalizedSignatureVerified": true,
+      "changedMessageRejected": true,
+      "authenticationClearedReported": true,
+      "implementation": "Node v22.23.1 / OpenSSL 3.5.7"
+    },
+    {
+      "record": 1,
+      "slot": "AUT",
+      "algorithm": "secp256k1",
+      "caseId": "basic",
+      "messageBytes": 100,
+      "inputBytes": 32,
+      "publicKeyBytes": 65,
+      "rawSignatureBytes": 64,
+      "signatureBytes": 64,
+      "rawSignatureVerified": true,
+      "normalizedSignatureVerified": true,
+      "changedMessageRejected": true,
+      "authenticationClearedReported": true,
+      "implementation": "Node v22.23.1 / OpenSSL 3.5.7"
+    }
+  ]
+}

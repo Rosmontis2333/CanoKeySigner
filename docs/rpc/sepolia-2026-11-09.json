@@ -1,0 +1,92 @@
+{
+  "status": "passed",
+  "startedAt": "2026-11-09T08:25:37.411Z",
+  "finishedAt": "2026-11-09T08:25:40.200Z",
+  "endpoint": "https://ethereum-sepolia-rpc.publicnode.com",
+  "data": "dedicated synthetic public key and unsigned zero-value Sepolia transaction",
+  "methods": [
+    "eth_chainId",
+    "eth_getTransactionCount",
+    "eth_chainId",
+    "eth_getBlockByNumber",
+    "eth_getTransactionCount",
+    "eth_getTransactionCount",
+    "eth_getBalance",
+    "eth_getCode",
+    "eth_call",
+    "eth_estimateGas",
+    "eth_getBlockByNumber",
+    "eth_chainId"
+  ],
+  "rows": [
+    [
+      "RPC 来源（用户选择）",
+      "PublicNode · Sepolia · https://ethereum-sepolia-rpc.publicnode.com"
+    ],
+    [
+      "RPC chainId 核对",
+      "11155111"
+    ],
+    [
+      "RPC 参考区块",
+      "12096319 · 0x59751b922cda2126d2743691c0a73b7e35bec1d96d90afd5ea36ccb38d43e2a2"
+    ],
+    [
+      "RPC 区块时间戳（秒）",
+      "1794212736"
+    ],
+    [
+      "RPC 信任范围",
+      "数据依赖所选端点，未提供独立链上证明。执行检查按同一区块号读取并在结束时复核区块 hash。"
+    ],
+    [
+      "RPC 账户 nonce（参考区块）",
+      "68"
+    ],
+    [
+      "RPC 账户 nonce（pending）",
+      "68"
+    ],
+    [
+      "RPC 账户余额（wei）",
+      "0"
+    ],
+    [
+      "RPC 金额与最大网络费需求（wei）",
+      "2100000000000000"
+    ],
+    [
+      "RPC 目标代码",
+      "参考区块未返回代码"
+    ],
+    [
+      "RPC 签名策略",
+      "参考区块余额不足以覆盖金额与最大网络费。"
+    ],
+    [
+      "RPC 区块 gasLimit",
+      "200000000"
+    ],
+    [
+      "RPC 区块 baseFee（wei/gas）",
+      "16"
+    ],
+    [
+      "RPC 签名策略",
+      "eth_call 失败，RPC 错误码 -32000。"
+    ],
+    [
+      "RPC 签名策略",
+      "eth_estimateGas 失败，RPC 错误码 -32000。"
+    ],
+    [
+      "RPC 执行检查范围",
+      "使用原交易的账户、金额、calldata、gas 和费用字段，无状态覆盖。eth_call 不校验外层签名，未来执行与 pending 状态仍可能变化。"
+    ],
+    [
+      "RPC 上下文有效期",
+      "2026-11-09T08:27:38.871Z，内容或来源变化后需重新确认"
+    ]
+  ],
+  "signable": false
+}

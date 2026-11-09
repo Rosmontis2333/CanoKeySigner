@@ -1,0 +1,45 @@
+{
+  "name": "canokey-signer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "test": "tsx --test test/*.test.ts",
+    "test:relay": "tsx test/walletconnect-relay.ts",
+    "test:rpc": "tsx test/solana-rpc-live.ts",
+    "test:rpc:evm": "tsx test/evm-rpc-live.ts",
+    "preview": "vite preview --host 127.0.0.1",
+    "build:offline": "tsc --noEmit && vite build --mode offline",
+    "release": "npm test && node scripts/release.mjs"
+  },
+  "dependencies": {
+    "@noble/curves": "2.2.0",
+    "@noble/hashes": "2.2.0",
+    "@scure/base": "2.2.0",
+    "@scure/btc-signer": "2.4.1",
+    "jsqr": "1.4.0",
+    "micro-eth-signer": "0.20.1"
+  },
+  "optionalDependencies": {
+    "@walletconnect/sign-client": "2.26.0"
+  },
+  "devDependencies": {
+    "@solana/transaction-messages": "8.6.0",
+    "@solana/transactions": "8.6.0",
+    "@solana/web3.js": "1.98.4",
+    "@types/node": "22.20.5",
+    "@types/w3c-web-usb": "1.0.14",
+    "bitcoinjs-lib": "7.0.5",
+    "ox": "0.9.3",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3",
+    "vite": "8.3.6"
+  },
+  "overrides": {
+    "@solana/web3.js": {
+      "jayson": "5.0.0"
+    }
+  }
+}

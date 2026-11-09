@@ -1,0 +1,1296 @@
+{
+  "sdk": "@solana/spl-token@0.4.15",
+  "integrity": "sha512-3Lof3mNov8NVQ3PalIWb1Jgr/TZ6lYM+/sexv2TLqdhNFVth2OfWmH3d7QucgMjSbokkjNiNlRr6I8Fd269uaw==",
+  "vectors": [
+    {
+      "name": "transferUnchecked",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "037b00000000000000",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "EdmxWPmx2WH6WgFfTdu9xfkYf3k1g5wD1zccTVySEEh1",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "Token-2022 转移",
+      "multi": false,
+      "signable": false
+    },
+    {
+      "name": "transferChecked",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "0c7b0000000000000006",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "AKkzLhjhyFtM9j7WAhbaqYpFe49cXeJBg2kzLRC2PnNa",
+          "isSigner": false,
+          "isWritable": false
+        },
+        {
+          "address": "EdmxWPmx2WH6WgFfTdu9xfkYf3k1g5wD1zccTVySEEh1",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "Token-2022 转移",
+      "multi": false,
+      "signable": false
+    },
+    {
+      "name": "approve",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "04ffffffffffffffff",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "EdmxWPmx2WH6WgFfTdu9xfkYf3k1g5wD1zccTVySEEh1",
+          "isSigner": false,
+          "isWritable": false
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "Token-2022 delegate 授权",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "approveChecked",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "0d7b0000000000000006",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "AKkzLhjhyFtM9j7WAhbaqYpFe49cXeJBg2kzLRC2PnNa",
+          "isSigner": false,
+          "isWritable": false
+        },
+        {
+          "address": "EdmxWPmx2WH6WgFfTdu9xfkYf3k1g5wD1zccTVySEEh1",
+          "isSigner": false,
+          "isWritable": false
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "Token-2022 delegate 授权",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "revoke",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "05",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "撤销 Token-2022 delegate 授权",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "mintTo",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "077b00000000000000",
+      "accounts": [
+        {
+          "address": "AKkzLhjhyFtM9j7WAhbaqYpFe49cXeJBg2kzLRC2PnNa",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "EdmxWPmx2WH6WgFfTdu9xfkYf3k1g5wD1zccTVySEEh1",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "增发 Token-2022",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "mintToChecked",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "0e7b0000000000000006",
+      "accounts": [
+        {
+          "address": "AKkzLhjhyFtM9j7WAhbaqYpFe49cXeJBg2kzLRC2PnNa",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "EdmxWPmx2WH6WgFfTdu9xfkYf3k1g5wD1zccTVySEEh1",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "增发 Token-2022",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "burn",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "087b00000000000000",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "AKkzLhjhyFtM9j7WAhbaqYpFe49cXeJBg2kzLRC2PnNa",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "销毁 Token-2022",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "burnChecked",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "0f7b0000000000000006",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "AKkzLhjhyFtM9j7WAhbaqYpFe49cXeJBg2kzLRC2PnNa",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "销毁 Token-2022",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "closeAccount",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "09",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "EdmxWPmx2WH6WgFfTdu9xfkYf3k1g5wD1zccTVySEEh1",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "关闭 Token 账户或 Mint 并转移全部 SOL",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "freeze",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "0a",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "AKkzLhjhyFtM9j7WAhbaqYpFe49cXeJBg2kzLRC2PnNa",
+          "isSigner": false,
+          "isWritable": false
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "冻结 Token-2022 账户",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "thaw",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "0b",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "AKkzLhjhyFtM9j7WAhbaqYpFe49cXeJBg2kzLRC2PnNa",
+          "isSigner": false,
+          "isWritable": false
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "解冻 Token-2022 账户",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "syncNative",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "11",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        }
+      ],
+      "operation": "同步 Wrapped SOL 余额",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "immutableOwner",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "16",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        }
+      ],
+      "operation": "初始化 Immutable Owner",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "authority0",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "060001ca93ac1705187071d67b83c7ff0efe8108e8ec4530575d7726879333dbdabe7c",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "修改 Token-2022 authority",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "authority1",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "060101ca93ac1705187071d67b83c7ff0efe8108e8ec4530575d7726879333dbdabe7c",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "修改 Token-2022 authority",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "authority2",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "060201ca93ac1705187071d67b83c7ff0efe8108e8ec4530575d7726879333dbdabe7c",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "修改 Token-2022 authority",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "authority3",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "060301ca93ac1705187071d67b83c7ff0efe8108e8ec4530575d7726879333dbdabe7c",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "修改 Token-2022 authority",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "authority4",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "060401ca93ac1705187071d67b83c7ff0efe8108e8ec4530575d7726879333dbdabe7c",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "修改 Token-2022 authority",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "authority5",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "060501ca93ac1705187071d67b83c7ff0efe8108e8ec4530575d7726879333dbdabe7c",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "修改 Token-2022 authority",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "authority6",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "060601ca93ac1705187071d67b83c7ff0efe8108e8ec4530575d7726879333dbdabe7c",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "修改 Token-2022 authority",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "authority7",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "060701ca93ac1705187071d67b83c7ff0efe8108e8ec4530575d7726879333dbdabe7c",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "修改 Token-2022 authority",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "authority8",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "060801ca93ac1705187071d67b83c7ff0efe8108e8ec4530575d7726879333dbdabe7c",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "修改 Token-2022 authority",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "authority9",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "060901ca93ac1705187071d67b83c7ff0efe8108e8ec4530575d7726879333dbdabe7c",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "修改 Token-2022 authority",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "authority10",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "060a01ca93ac1705187071d67b83c7ff0efe8108e8ec4530575d7726879333dbdabe7c",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "修改 Token-2022 authority",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "authority11",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "060b01ca93ac1705187071d67b83c7ff0efe8108e8ec4530575d7726879333dbdabe7c",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "修改 Token-2022 authority",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "authority12",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "060c01ca93ac1705187071d67b83c7ff0efe8108e8ec4530575d7726879333dbdabe7c",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "修改 Token-2022 authority",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "authority13",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "060d01ca93ac1705187071d67b83c7ff0efe8108e8ec4530575d7726879333dbdabe7c",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "修改 Token-2022 authority",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "authority14",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "060e01ca93ac1705187071d67b83c7ff0efe8108e8ec4530575d7726879333dbdabe7c",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "修改 Token-2022 authority",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "authority15",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "060f01ca93ac1705187071d67b83c7ff0efe8108e8ec4530575d7726879333dbdabe7c",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "修改 Token-2022 authority",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "authority16",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "061001ca93ac1705187071d67b83c7ff0efe8108e8ec4530575d7726879333dbdabe7c",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "修改 Token-2022 authority",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "authority17",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "061101ca93ac1705187071d67b83c7ff0efe8108e8ec4530575d7726879333dbdabe7c",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "修改 Token-2022 authority",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "authorityNone",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "060400",
+      "accounts": [
+        {
+          "address": "AKkzLhjhyFtM9j7WAhbaqYpFe49cXeJBg2kzLRC2PnNa",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "修改 Token-2022 authority",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "initializeFee00",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "1a000000640040420f0000000000",
+      "accounts": [
+        {
+          "address": "AKkzLhjhyFtM9j7WAhbaqYpFe49cXeJBg2kzLRC2PnNa",
+          "isSigner": false,
+          "isWritable": true
+        }
+      ],
+      "operation": "初始化 Token-2022 Transfer Fee Config",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "initializeFee01",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "1a000001ed4928c628d1c2c6eae90338905995612959273a5c63f93636c14614ac8737d1640040420f0000000000",
+      "accounts": [
+        {
+          "address": "AKkzLhjhyFtM9j7WAhbaqYpFe49cXeJBg2kzLRC2PnNa",
+          "isSigner": false,
+          "isWritable": true
+        }
+      ],
+      "operation": "初始化 Token-2022 Transfer Fee Config",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "initializeFee10",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "1a00018139770ea87d175f56a35466c34c7ecccb8d8a91b4ee37a25df60f5b8fc9b39400640040420f0000000000",
+      "accounts": [
+        {
+          "address": "AKkzLhjhyFtM9j7WAhbaqYpFe49cXeJBg2kzLRC2PnNa",
+          "isSigner": false,
+          "isWritable": true
+        }
+      ],
+      "operation": "初始化 Token-2022 Transfer Fee Config",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "initializeFee11",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "1a00018139770ea87d175f56a35466c34c7ecccb8d8a91b4ee37a25df60f5b8fc9b39401ed4928c628d1c2c6eae90338905995612959273a5c63f93636c14614ac8737d1640040420f0000000000",
+      "accounts": [
+        {
+          "address": "AKkzLhjhyFtM9j7WAhbaqYpFe49cXeJBg2kzLRC2PnNa",
+          "isSigner": false,
+          "isWritable": true
+        }
+      ],
+      "operation": "初始化 Token-2022 Transfer Fee Config",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "setFee",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "1a051027ffffffffffffffff",
+      "accounts": [
+        {
+          "address": "AKkzLhjhyFtM9j7WAhbaqYpFe49cXeJBg2kzLRC2PnNa",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "修改 Token-2022 Transfer Fee",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "transferWithFee",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "1a0115cd5b0700000000063930000000000000",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "AKkzLhjhyFtM9j7WAhbaqYpFe49cXeJBg2kzLRC2PnNa",
+          "isSigner": false,
+          "isWritable": false
+        },
+        {
+          "address": "EdmxWPmx2WH6WgFfTdu9xfkYf3k1g5wD1zccTVySEEh1",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "Token-2022 转移并核对预期手续费",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "transferWithFeeZero",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "1a010000000000000000000000000000000000",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "AKkzLhjhyFtM9j7WAhbaqYpFe49cXeJBg2kzLRC2PnNa",
+          "isSigner": false,
+          "isWritable": false
+        },
+        {
+          "address": "EdmxWPmx2WH6WgFfTdu9xfkYf3k1g5wD1zccTVySEEh1",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "Token-2022 转移并核对预期手续费",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "transferWithFeeMax",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "1a01ffffffffffffffffffffffffffffffffff",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "AKkzLhjhyFtM9j7WAhbaqYpFe49cXeJBg2kzLRC2PnNa",
+          "isSigner": false,
+          "isWritable": false
+        },
+        {
+          "address": "EdmxWPmx2WH6WgFfTdu9xfkYf3k1g5wD1zccTVySEEh1",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "Token-2022 转移并核对预期手续费",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "transferWithFeeSelf",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "1a016400000000000000060100000000000000",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "AKkzLhjhyFtM9j7WAhbaqYpFe49cXeJBg2kzLRC2PnNa",
+          "isSigner": false,
+          "isWritable": false
+        },
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "Token-2022 转移并核对预期手续费",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "transferWithFeeMultisig",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "1a017b00000000000000060100000000000000",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "AKkzLhjhyFtM9j7WAhbaqYpFe49cXeJBg2kzLRC2PnNa",
+          "isSigner": false,
+          "isWritable": false
+        },
+        {
+          "address": "EdmxWPmx2WH6WgFfTdu9xfkYf3k1g5wD1zccTVySEEh1",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "2KW2XRd9kwqet15Aha2oK3tYvd3nWbTFH1MBiRAv1BE1",
+          "isSigner": false,
+          "isWritable": false
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        },
+        {
+          "address": "GyGKxMyg1p9SsHfm15MkNUu1u9TN2JtTspcdmrtGUdse",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "Token-2022 转移并核对预期手续费",
+      "multi": true,
+      "signable": true
+    },
+    {
+      "name": "withdrawMint",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "1a02",
+      "accounts": [
+        {
+          "address": "AKkzLhjhyFtM9j7WAhbaqYpFe49cXeJBg2kzLRC2PnNa",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "EdmxWPmx2WH6WgFfTdu9xfkYf3k1g5wD1zccTVySEEh1",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "从 Mint 提取全部预扣手续费",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "withdrawAccounts",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "1a0302",
+      "accounts": [
+        {
+          "address": "AKkzLhjhyFtM9j7WAhbaqYpFe49cXeJBg2kzLRC2PnNa",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "EdmxWPmx2WH6WgFfTdu9xfkYf3k1g5wD1zccTVySEEh1",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        },
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "2KW2XRd9kwqet15Aha2oK3tYvd3nWbTFH1MBiRAv1BE1",
+          "isSigner": false,
+          "isWritable": true
+        }
+      ],
+      "operation": "从 Token 账户提取全部预扣手续费",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "withdrawAccountsMultisig",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "1a0301",
+      "accounts": [
+        {
+          "address": "AKkzLhjhyFtM9j7WAhbaqYpFe49cXeJBg2kzLRC2PnNa",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "EdmxWPmx2WH6WgFfTdu9xfkYf3k1g5wD1zccTVySEEh1",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "2KW2XRd9kwqet15Aha2oK3tYvd3nWbTFH1MBiRAv1BE1",
+          "isSigner": false,
+          "isWritable": false
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        },
+        {
+          "address": "GyGKxMyg1p9SsHfm15MkNUu1u9TN2JtTspcdmrtGUdse",
+          "isSigner": true,
+          "isWritable": false
+        },
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        }
+      ],
+      "operation": "从 Token 账户提取全部预扣手续费",
+      "multi": true,
+      "signable": true
+    },
+    {
+      "name": "withdrawAccountsEmpty",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "1a0300",
+      "accounts": [
+        {
+          "address": "AKkzLhjhyFtM9j7WAhbaqYpFe49cXeJBg2kzLRC2PnNa",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "EdmxWPmx2WH6WgFfTdu9xfkYf3k1g5wD1zccTVySEEh1",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "从 Token 账户提取全部预扣手续费",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "harvest",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "1a04",
+      "accounts": [
+        {
+          "address": "AKkzLhjhyFtM9j7WAhbaqYpFe49cXeJBg2kzLRC2PnNa",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "EdmxWPmx2WH6WgFfTdu9xfkYf3k1g5wD1zccTVySEEh1",
+          "isSigner": false,
+          "isWritable": true
+        }
+      ],
+      "operation": "将账户预扣手续费归集至 Mint",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "harvestEmpty",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "1a04",
+      "accounts": [
+        {
+          "address": "AKkzLhjhyFtM9j7WAhbaqYpFe49cXeJBg2kzLRC2PnNa",
+          "isSigner": false,
+          "isWritable": true
+        }
+      ],
+      "operation": "将账户预扣手续费归集至 Mint",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "enableMemo",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "1e00",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "启用转入 Memo 要求",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "disableMemo",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "1e01",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "禁用转入 Memo 要求",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "enableCpiGuard",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "2200",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "启用 CPI Guard",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "disableCpiGuard",
+      "program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "dataHex": "2201",
+      "accounts": [
+        {
+          "address": "GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "2KW2XRd9kwqet15Aha2oK3tYvd3nWbTFH1MBiRAv1BE1",
+          "isSigner": false,
+          "isWritable": false
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": false
+        },
+        {
+          "address": "GyGKxMyg1p9SsHfm15MkNUu1u9TN2JtTspcdmrtGUdse",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "operation": "禁用 CPI Guard",
+      "multi": true,
+      "signable": true
+    },
+    {
+      "name": "createAta",
+      "program": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+      "dataHex": "",
+      "accounts": [
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": true
+        },
+        {
+          "address": "6Kt9S6geFk2W1s5qLESjGbjbkKA3vfuLsfr94AXaLKbS",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": false,
+          "isWritable": false
+        },
+        {
+          "address": "AKkzLhjhyFtM9j7WAhbaqYpFe49cXeJBg2kzLRC2PnNa",
+          "isSigner": false,
+          "isWritable": false
+        },
+        {
+          "address": "11111111111111111111111111111111",
+          "isSigner": false,
+          "isWritable": false
+        },
+        {
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "isSigner": false,
+          "isWritable": false
+        }
+      ],
+      "operation": "创建 Associated Token Account",
+      "multi": false,
+      "signable": true
+    },
+    {
+      "name": "createAtaIdempotent",
+      "program": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+      "dataHex": "01",
+      "accounts": [
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": true,
+          "isWritable": true
+        },
+        {
+          "address": "6Kt9S6geFk2W1s5qLESjGbjbkKA3vfuLsfr94AXaLKbS",
+          "isSigner": false,
+          "isWritable": true
+        },
+        {
+          "address": "9hSR6S7WPtxmTojgo6GG3k4yDPecgJY292j7xrsUGWBu",
+          "isSigner": false,
+          "isWritable": false
+        },
+        {
+          "address": "AKkzLhjhyFtM9j7WAhbaqYpFe49cXeJBg2kzLRC2PnNa",
+          "isSigner": false,
+          "isWritable": false
+        },
+        {
+          "address": "11111111111111111111111111111111",
+          "isSigner": false,
+          "isWritable": false
+        },
+        {
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+          "isSigner": false,
+          "isWritable": false
+        }
+      ],
+      "operation": "幂等创建 Associated Token Account",
+      "multi": false,
+      "signable": true
+    }
+  ]
+}

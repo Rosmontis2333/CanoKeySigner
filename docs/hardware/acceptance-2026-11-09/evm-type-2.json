@@ -1,0 +1,12 @@
+{
+  "type": "2",
+  "chainId": "31337",
+  "nonce": "0",
+  "gasLimit": "21000",
+  "to": "0x1111111111111111111111111111111111111111",
+  "value": "0",
+  "data": "0x",
+  "maxFeePerGas": "2",
+  "maxPriorityFeePerGas": "1",
+  "accessList": []
+}
