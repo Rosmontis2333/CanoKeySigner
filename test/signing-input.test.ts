@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { base58, base64 } from '@scure/base';
 import { bytesToHex } from '@noble/hashes/utils.js';
-import { detectEvmInput, detectSolanaInput } from '../src/ui/signing-input';
+import { detectEvmInput, detectSolanaInput, detectBitcoinInput, detectAutomaticSolanaInput, decodeSigningFile } from '../src/ui/signing-input';
 import { prepareEvmTransaction } from '../src/chains/evm/transaction';
 import { prepareEvmMessage } from '../src/chains/evm/message';
 import { prepareSolanaTextMessage } from '../src/chains/solana/message';
@@ -63,4 +63,28 @@ test('Solana encoded garbage, truncated envelopes and wrong encodings fail recog
   }
   assert.throws(() => detectSolanaInput(base64.encode(fixture.bytes), 'hex'));
   assert.throws(() => detectSolanaInput('', 'base64'));
+});
+
+
+test('automatic encodings and binary/text imports preserve the same signing bytes', () => {
+  for (const fixture of [solanaFixture(), solanaFixture(true), solanaV1Fixture()]) {
+    for (const bytes of [fixture.bytes, fixture.message]) {
+      for (const source of [base64.encode(bytes), base58.encode(bytes), bytesToHex(bytes), '0x' + bytesToHex(bytes)]) {
+        assert.equal(detectAutomaticSolanaInput(source).kind, 'transaction');
+        const imported = decodeSigningFile(new TextEncoder().encode(source), 'solana');
+        assert.equal(detectAutomaticSolanaInput(imported).kind, 'transaction');
+      }
+      assert.equal(detectAutomaticSolanaInput(decodeSigningFile(bytes, 'solana')).kind, 'transaction');
+    }
+  }
+  const psbt = new Uint8Array([0x70, 0x73, 0x62, 0x74, 0xff, 0]);
+  for (const source of [base64.encode(psbt), bytesToHex(psbt), '0x' + bytesToHex(psbt)]) {
+    assert.ok(detectBitcoinInput(source));
+    assert.ok(detectBitcoinInput(decodeSigningFile(new TextEncoder().encode(source), 'bitcoin')));
+  }
+  assert.ok(detectBitcoinInput(decodeSigningFile(psbt, 'bitcoin')));
+  const text = 'Sign in to example.org with nonce 123';
+  assert.equal(decodeSigningFile(new TextEncoder().encode(text), 'solana'), text);
+  assert.throws(() => detectBitcoinInput('hello'));
+  assert.throws(() => decodeSigningFile(new Uint8Array([255, 0, 12]), 'solana'));
 });

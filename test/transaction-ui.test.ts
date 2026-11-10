@@ -34,7 +34,7 @@ function fixture(context: TestContext, chain: 'evm' | 'bitcoin' | 'solana') {
   }
   const prefix = chain === 'evm' ? 'transaction' : chain;
   const get = (name: string) => elements.get(`${prefix}-${name}`)!;
-  if (chain !== 'evm') { get('network').value = chain === 'solana' ? 'mainnet-beta' : 'mainnet'; get('encoding').value = 'base64'; }
+  if (chain !== 'evm') { get('network').value = chain === 'solana' ? 'mainnet-beta' : 'mainnet'; }
   const key = { slot: 'SIG', algorithm: chain === 'solana' ? 'ed25519' : 'secp256k1', algorithmHex: '',
     publicKeyHex: bytesToHex(chain === 'solana' ? solanaSigner.publicKey.toBytes() : bitcoinPublic), uifHex: '0120' } as const;
   const access: DeviceAccess = { slots: () => [key], busy: () => false, cancel() {}, requireReinsert() {},

@@ -76,8 +76,7 @@
         <select id="bitcoin-slot" hidden><option>请先读取设备</option></select>
         <label class="network-label" id="bitcoin-network-label" for="bitcoin-network">确认 Bitcoin 网络</label>
         <select id="bitcoin-network"><option value="mainnet">Bitcoin Mainnet</option><option value="testnet">Bitcoin Testnet</option></select>
-        <label for="bitcoin-encoding">粘贴 / 文本文件编码</label><select id="bitcoin-encoding"><option value="base64">Base64</option><option value="hex">Hex</option></select>
-        <label for="bitcoin-file">导入交易文件</label>
+        <label for="bitcoin-file">导入文件（自动识别文本或二进制）</label>
         <input id="bitcoin-file" type="file" accept=".psbt,.hex,.txt,.base64" />
         <label for="bitcoin-source">PSBT Base64 / Hex</label>
         <textarea id="bitcoin-source" rows="9" spellcheck="false" placeholder="粘贴 PSBT，或选择文件"></textarea>
@@ -104,11 +103,10 @@
         <select id="solana-slot" hidden><option>请先读取设备</option></select>
         <label class="network-label" id="solana-network-label" for="solana-network">确认 Solana cluster</label>
         <select id="solana-network"><option value="mainnet-beta">Solana Mainnet Beta</option><option value="devnet">Solana Devnet</option><option value="testnet">Solana Testnet</option></select>
-        <label id="solana-encoding-label" for="solana-encoding">粘贴 / 文本文件编码</label><select id="solana-encoding"><option value="base64">Base64</option><option value="hex">Hex</option><option value="base58">Base58</option><option value="binary">二进制文件（明确选择后导入）</option></select>
-        <label id="solana-file-label" for="solana-file">导入交易文件</label>
+        <label id="solana-file-label" for="solana-file">导入文件（自动识别文本或二进制）</label>
         <input id="solana-file" type="file" accept=".bin,.hex,.txt,.base64,.base58" />
         <label id="solana-source-label" for="solana-source">交易 / 离链消息内容</label>
-        <textarea id="solana-source" rows="9" spellcheck="false" placeholder="粘贴已明确编码的 Solana 交易或消息"></textarea>
+        <textarea id="solana-source" rows="9" spellcheck="false" placeholder="粘贴交易或消息，自动识别 Base64、Base58、Hex"></textarea>
         <label id="solana-snapshots-label" for="solana-snapshots">v0 ALT 离线快照 JSON（需要时提供）</label><textarea id="solana-snapshots" rows="5" spellcheck="false" placeholder='[{"address":"...","owner":"AddressLookupTab1e1111111111111111111111111","dataBase64":"...","source":"导出来源","contextSlot":"123","network":"mainnet-beta"}]'></textarea>
         <details id="solana-rpc"><summary>可选 RPC 读取与模拟</summary>
           <p>主动读取所选端点的网络、ALT 和费用，并发送当前交易进行模拟。原始交易内容与相关账户地址会提供给该端点。请先核对来源，公共端点可能限流。</p>

@@ -11,13 +11,12 @@ import { executeReviewedTransaction } from '../signing/execute';
 import type { DeviceAccess, Review } from '../signing/execute';
 import { prepareSolanaMessage, prepareSolanaTextMessage } from '../chains/solana/message';
 import { mountBroadcastApp } from './broadcast';
-import { detectEvmInput, detectSolanaInput } from './signing-input';
+import { detectEvmInput, detectBitcoinInput, detectAutomaticSolanaInput, decodeSigningFile } from './signing-input';
 
 export function mountTransactionApp(access: DeviceAccess, chain: 'evm' | 'bitcoin' | 'solana'): { invalidate(): void; refresh(): void } {
   const get = <T extends HTMLElement>(id: string) => document.getElementById(chain === 'evm' ? id : id.replace('transaction-', chain + '-')) as T;
   const source = get<HTMLTextAreaElement>('transaction-source');
   const network = chain === 'evm' ? undefined : get<HTMLSelectElement>('transaction-network');
-  const encoding = get<HTMLSelectElement>('transaction-encoding');
   const outputEncoding = get<HTMLSelectElement>('transaction-output-encoding');
   const snapshots = get<HTMLTextAreaElement>('transaction-snapshots');
   const rpcPane = chain !== 'bitcoin' ? get('transaction-rpc') : undefined;
@@ -66,8 +65,9 @@ export function mountTransactionApp(access: DeviceAccess, chain: 'evm' | 'bitcoi
     sign.disabled = true;
   }
   function detectInput() {
-    return chain === 'solana' ? detectSolanaInput(source.value, encoding.value)
-      : { kind: chain === 'evm' ? detectEvmInput(source.value) : 'transaction', format: 'transaction' };
+    return chain === 'solana' ? detectAutomaticSolanaInput(source.value)
+      : chain === 'bitcoin' ? detectBitcoinInput(source.value)
+        : { kind: detectEvmInput(source.value), format: 'transaction', source: source.value, encoding: '' };
   }
   function refresh(): void {
     let method = '';
@@ -119,13 +119,13 @@ export function mountTransactionApp(access: DeviceAccess, chain: 'evm' | 'bitcoi
       rpcCancel!.disabled = !rpcController;
     }
   }
-  for (const control of [source, ...(network ? [network] : []), slot, ...(encoding ? [encoding] : []), ...(snapshots ? [snapshots] : []), ...(rpcEndpoint ? [rpcEndpoint] : [])]) control.addEventListener('input', () => {
+  for (const control of [source, ...(network ? [network] : []), slot, ...(snapshots ? [snapshots] : []), ...(rpcEndpoint ? [rpcEndpoint] : [])]) control.addEventListener('input', () => {
     invalidate(); refresh();
   });
   outputEncoding?.addEventListener('change', () => {
     if (resultBytes) output.value = encodeResult(resultBytes);
   });
-  for (const control of [source, network, file, encoding, snapshots]) {
+  for (const control of [source, network, file, snapshots]) {
     if (control) control.addEventListener('change', () => { if (!signing) refresh(); });
   }
   file.addEventListener('change', () => {
@@ -137,17 +137,13 @@ export function mountTransactionApp(access: DeviceAccess, chain: 'evm' | 'bitcoi
     const limit = chain === 'bitcoin' ? 2097152 : chain === 'solana' ? 10000 : 262144;
     if (selected.size > limit) { status.textContent = '文件超出当前链的大小限制'; return; }
     const read = async () => {
-      if (chain === 'evm') return { text: await selected.text(), binary: false };
-      const bytes = new Uint8Array(await selected.arrayBuffer());
-      const binary = chain === 'solana' ? encoding.value === 'binary' : bytes.length >= 5 && bytesToHex(bytes.slice(0, 5)) === '70736274ff';
-      return { text: binary ? base64.encode(bytes) : new TextDecoder('utf-8', { fatal: true }).decode(bytes), binary };
+      if (chain === 'evm') return selected.text();
+      return decodeSigningFile(new Uint8Array(await selected.arrayBuffer()), chain);
     };
-    void read().then(({ text, binary }) => {
+    void read().then((text) => {
       if (request !== fileGeneration || revision !== generation || signing) return;
-      if (binary && chain === 'solana' && detectSolanaInput(text, 'base64').kind === 'offchain-text') throw new Error('二进制文件未包含可识别的 Solana 数据');
       invalidate();
       source.value = text;
-      if (binary) encoding.value = 'base64';
       refresh();
       status.textContent = '文件已载入，请解析并审查。';
     }).catch((error) => {
@@ -174,7 +170,7 @@ export function mountTransactionApp(access: DeviceAccess, chain: 'evm' | 'bitcoi
     if (!key || !endpoint) return;
     invalidate();
     const abort = new AbortController(), revision = generation; rpcController = abort;
-    const input = { source: source.value, publicKeyHex: key.publicKeyHex, network: (network?.value ?? ''), encoding: encoding?.value ?? '', format: detected.format };
+    const input = { source: detected.source, publicKeyHex: key.publicKeyHex, network: (network?.value ?? ''), encoding: detected.encoding, format: detected.format };
     status.textContent = '正在核对 RPC 网络、读取上下文并检查原始交易…'; refresh();
     void (async () => {
       try {
@@ -203,13 +199,13 @@ export function mountTransactionApp(access: DeviceAccess, chain: 'evm' | 'bitcoi
     try {
       const key = access.slots().find((key) => key.slot === slot.value);
       if (!key) throw new Error('请先读取 CanoKey 的对应算法槽位');
-      const { kind: method, format } = detectInput();
+      const { kind: method, format, encoding, source: content } = detectInput();
       if (chain === 'evm') review = method === 'personal_sign' || method === 'eth_signTypedData_v4'
         ? prepareEvmMessage(method, source.value, key.publicKeyHex) : prepareEvmTransaction(source.value, key.publicKeyHex);
-      else if (chain === 'bitcoin') review = prepareBitcoinTransaction(source.value, key.publicKeyHex, (network?.value ?? ''), encoding.value);
+      else if (chain === 'bitcoin') review = prepareBitcoinTransaction(content, key.publicKeyHex, (network?.value ?? ''), encoding);
       else if (method === 'offchain-text') review = prepareSolanaTextMessage(source.value, key.publicKeyHex, (network?.value ?? ''));
-      else if (method === 'offchain-import') review = prepareSolanaMessage(source.value, key.publicKeyHex, (network?.value ?? ''), encoding.value);
-      else review = prepareSolanaTransaction(source.value, key.publicKeyHex, (network?.value ?? ''), encoding.value, format, snapshots.value || '[]');
+      else if (method === 'offchain-import') review = prepareSolanaMessage(content, key.publicKeyHex, (network?.value ?? ''), encoding);
+      else review = prepareSolanaTransaction(content, key.publicKeyHex, (network?.value ?? ''), encoding, format, snapshots.value || '[]');
       renderReview(review);
     } catch (error) { status.textContent = error instanceof Error ? error.message : '解析失败'; }
     refresh();
