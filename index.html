@@ -22,7 +22,7 @@
     <aside class="panel account-panel"><div class="panel-heading"><h2>签名账户</h2><span class="badge">OpenPGP</span></div>
       <div id="account-network"></div>
       <label for="account-slot">密钥槽位</label><select id="account-slot" disabled><option>连接设备后选择</option></select>
-      <label for="account-address">地址</label><select id="account-address" disabled><option>读取槽位后显示</option></select>
+      <label id="account-address-label" hidden for="account-address">地址</label><select id="account-address" hidden disabled><option>读取槽位后显示</option></select>
       <div class="address-box"><span>当前账户</span><p id="current-address">等待连接 CanoKey</p><button class="text-button" id="copy-address" type="button" disabled>复制地址</button></div>
       <p id="account-detail" class="subtle">EVM 与 Bitcoin 使用 secp256k1，Solana 使用 Ed25519。</p>
       <p id="status" class="status" role="status" aria-live="polite">准备连接设备。</p>

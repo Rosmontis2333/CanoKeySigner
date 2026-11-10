@@ -47,6 +47,7 @@ function refresh(): void {
   cancel.disabled = !busy;
   slot.disabled = busy || !discovery;
   address.disabled = busy || !address.value;
+  address.hidden = get('account-address-label').hidden = coin !== 'bitcoin';
   for (const app of apps.values()) app.refresh();
   for (const chain of ['evm', 'bitcoin', 'solana'] as const) {
     const nativeSlot = get<HTMLSelectElement>(`${prefix(chain)}-slot`);
