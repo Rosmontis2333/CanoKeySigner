@@ -33,7 +33,6 @@ jobs:
       - name: Build online application
         run: npm run build
         env:
-          CANOKEY_EVM_RPC_ENDPOINTS: ${{ vars.CANOKEY_EVM_RPC_ENDPOINTS }}
           CANOKEY_SOLANA_RPC_ENDPOINTS: ${{ vars.CANOKEY_SOLANA_RPC_ENDPOINTS }}
       - name: Build offline application
         run: npm run build:offline

@@ -61,7 +61,7 @@ npm run preview -- --outDir dist-offline --port 4174 --strictPort
 
 在 EVM 或 Solana 中点击左侧“连接 WalletConnect”，在弹窗输入 dApp 的 v2 连接地址，也可点击“启动摄像头扫码”。识别后确认连接，再通过请求弹窗批准链、账户及方法。连接后的交易与消息请求自动弹窗，逐笔审查并签名。关闭待处理请求弹窗会拒绝该请求。扫码优先请求 1080p 画面，支持的摄像头会启用连续对焦。浏览器原生二维码识别和本地解码配合中心区域、全帧多分辨率扫描，支持倒色二维码。连接多台摄像头时可在预览上方切换。将完整二维码放在画面中央，保留边缘空白并保持对焦清晰。摄像头画面在本地解析，关闭弹窗、切换账户或页面进入后台时停止采集。Project ID 内置为 `d2a8b6044c46a77b4de519960103175c`。连接批准后，每次请求仍核对会话、chainId、账户、方法和有效期。发送交易的方法还需要已配置 RPC，并要求独立批准广播。[提交操作与状态含义](docs/BROADCAST_PROTOCOL.md)
 
-联网构建使用固定 WalletConnect relay 和 Verify 来源。RPC 默认包含 Solana 公共 cluster 端点、Ethereum Mainnet 与 Sepolia 的 PublicNode 端点。可以通过 `.env.local` 的 `CANOKEY_SOLANA_RPC_ENDPOINTS` 和 `CANOKEY_EVM_RPC_ENDPOINTS` 替换来源，设为 `[]` 可清空对应列表。端点 URL 会进入静态产物，配置与页面来源的 CORS 权限需在构建前核对。[配置格式、数据披露和上下文限制](docs/RPC_PROTOCOL.md)
+联网构建使用固定 WalletConnect relay 和 Verify 来源。RPC 默认包含 Solana 公共 cluster 端点、Ethereum、Base、Arbitrum One、BNB Smart Chain 和 Arc 主网端点，按签名内容或 WalletConnect 请求的 chainId 自动匹配。Solana 来源可通过 `.env.local` 的 `CANOKEY_SOLANA_RPC_ENDPOINTS` 配置，设为 `[]` 可清空。端点 URL 会进入静态产物，配置与页面来源的 CORS 权限需在构建前核对。[配置格式、数据披露和上下文限制](docs/RPC_PROTOCOL.md)
 
 PIN 不进入日志、WalletConnect、RPC 或持久存储。JavaScript 会尽快清除引用与缓冲，无法保证物理内存擦除。WalletConnect SDK 可保留浏览器会话数据，应用在新页面初始化时断开恢复的旧会话，并重新要求硬件账户授权。
 

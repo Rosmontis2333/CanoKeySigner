@@ -203,6 +203,9 @@ const wallet = createWalletConnection(access, {
       const option = document.createElement('option'); option.value = ''; option.textContent = '当前请求网络未配置 RPC'; wcRpcEndpoint.append(option);
     }
     get('wc-rpc-source').textContent = account.coin === 'evm' ? `来源按已授权请求的 chainId ${account.network} 匹配` : `本次请求的 cluster ${account.network}`;
+    wcRpcEndpoint.hidden = get('wc-rpc-label').hidden = account.coin === 'evm';
+    if (account.coin === 'evm') get('wc-rpc-source').textContent = wcRpcEndpoints[0]
+      ? `${wcRpcEndpoints[0].name} · ${new URL(wcRpcEndpoints[0].url).origin} · chainId ${account.network}` : '当前 chainId 未内置 RPC';
     wcRpcEndpoint.disabled = busy || !wcRpcEndpoints.length;
     wcRpcRead.disabled = busy || !wcRpcEndpoints.length; wcRpcCancel.disabled = !busy;
     if (checks.length > 1) checks.forEach((review, index) => {

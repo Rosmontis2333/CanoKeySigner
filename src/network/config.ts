@@ -48,7 +48,10 @@ export function validateEvmRpcEndpoint(value: unknown): EvmRpcEndpoint {
 export function evmRpcEndpoints(source?: string): readonly EvmRpcEndpoint[] {
   const inputs: unknown = source === undefined ? [
     { name: 'PublicNode · Ethereum', chainId: '1', url: 'https://ethereum-rpc.publicnode.com/' },
-    { name: 'PublicNode · Sepolia', chainId: '11155111', url: 'https://ethereum-sepolia-rpc.publicnode.com/' },
+    { name: 'Base', chainId: '8453', url: 'https://base-rpc.publicnode.com/' },
+    { name: 'Arbitrum One', chainId: '42161', url: 'https://arb1.arbitrum.io/rpc' },
+    { name: 'BNB Smart Chain', chainId: '56', url: 'https://bsc-dataseed.bnbchain.org/' },
+    { name: 'Arc', chainId: '5042', url: 'https://rpc.mainnet.arc.io/' },
   ] : strictJson(source);
   if (!Array.isArray(inputs) || inputs.length > 32) throw new Error('EVM RPC 配置需要至多 32 个端点');
   const endpoints = inputs.map(validateEvmRpcEndpoint);

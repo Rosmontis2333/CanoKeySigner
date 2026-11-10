@@ -38,11 +38,9 @@ RPC 客户端仅开放已声明的读取和模拟方法，使用 POST、credenti
 CANOKEY_SOLANA_RPC_ENDPOINTS='[{"name":"My Devnet RPC","network":"devnet","url":"https://rpc.example.org/solana"}]'
 ```
 
-EVM 使用单独变量，最多 32 个端点，chainId 使用正整数十进制字符串。该配置匹配交易内容中的 chainId。
+EVM 内置 Ethereum（1）、Base（8453）、Arbitrum One（42161）、BNB Smart Chain（56）与 Arc（5042）主网来源，按交易或 WalletConnect 请求的 chainId 自动匹配。页面显示匹配来源，构建使用固定列表。
 
-```dotenv
-CANOKEY_EVM_RPC_ENDPOINTS='[{"name":"My EVM RPC","chainId":"31337","url":"http://127.0.0.1:8545"}]'
-```
+来源参考 [Base PublicNode](https://base.publicnode.com/)、[Arbitrum 官方信息](https://docs.arbitrum.io/chain-info)、[BNB 官方信息](https://docs.bnbchain.org/bnb-smart-chain/developers/json_rpc/json-rpc-endpoint/) 和 [Arc 官方信息](https://docs.arc.io/arc/references/connect-to-arc)。Arc 原生 Gas 资产为 USDC。
 
 URL 允许 HTTPS，或 localhost/127.0.0.1/::1 的本机 HTTP，拒绝 URL 登录凭据和 fragment。配置为 `[]` 时禁用 RPC 来源。配置 URL 会进入静态客户端构建，需要保密的服务端凭据应留在服务端。端点需接受当前页面来源的 CORS POST 请求。
 

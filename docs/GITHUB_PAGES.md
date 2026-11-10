@@ -15,7 +15,7 @@ Vite 使用相对 base，首页、资源、动态模块和许可证链接支持 
 
 ## 可选 RPC 来源
 
-在 Settings → Secrets and variables → Actions → Variables 中配置 CANOKEY_EVM_RPC_ENDPOINTS 或 CANOKEY_SOLANA_RPC_ENDPOINTS，值沿用 RPC 文档中的 JSON 数组。留空使用内置公共端点，设为 `[]` 清空对应来源。
+在 Settings → Secrets and variables → Actions → Variables 中配置 CANOKEY_SOLANA_RPC_ENDPOINTS，值沿用 RPC 文档中的 JSON 数组。EVM 使用内置 Ethereum、Base、Arbitrum One、BNB Smart Chain 和 Arc 主网来源，自动按 chainId 匹配。留空使用内置公共端点，设为 `[]` 清空对应来源。
 
 这些值会进入公开静态产物，应使用可以公开的端点配置。本地 .env 文件不随 Git 上传，CI 通过上述 Variables 取得自定义来源。WalletConnect Project ID 已内置。[RPC 配置格式](RPC_PROTOCOL.md)
 

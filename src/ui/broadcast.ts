@@ -64,6 +64,7 @@ export function mountBroadcastApp(chain: 'evm' | 'solana') {
       const option = document.createElement('option'); option.value = String(index);
       option.textContent = `${endpoint.name} · ${new URL(endpoint.url).origin}`; source.append(option);
     });
+    if (chain === 'evm') get('rpc').textContent = endpoints[0] ? `${endpoints[0].name} · ${new URL(endpoints[0].url).origin}` : '当前 chainId 未内置 RPC';
     pane.hidden = false; void prepareTask();
   });
   source.addEventListener('change', () => { task = undefined; confirm.checked = false; void prepareTask(); });

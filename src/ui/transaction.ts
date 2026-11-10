@@ -114,6 +114,7 @@ export function mountTransactionApp(access: DeviceAccess, chain: 'evm' | 'bitcoi
         const option = document.createElement('option'); option.value = '';
         option.textContent = chain === 'evm' && !rpcChainId ? '导入完整签名内容后匹配 RPC 来源' : '当前网络未配置 RPC'; rpcEndpoint.append(option);
       }
+      if (chain === 'evm') get('transaction-rpc-source').textContent = rpcEndpoint.options[0]?.textContent ?? '';
       rpcEndpoint.disabled = !!rpcController || !hasEndpoint;
       rpcRead.disabled = !__WALLETCONNECT__ || signing || !!rpcController || access.busy() || !slot.options.length || !hasEndpoint;
       rpcCancel!.disabled = !rpcController;

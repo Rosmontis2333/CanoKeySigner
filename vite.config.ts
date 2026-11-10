@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => {
   const offline = mode === 'offline';
   const environment = loadEnv(mode, process.cwd(), 'CANOKEY_');
   const endpoints = offline ? [] : rpcEndpoints(environment.CANOKEY_SOLANA_RPC_ENDPOINTS || undefined);
-  const evmEndpoints = offline ? [] : evmRpcEndpoints(environment.CANOKEY_EVM_RPC_ENDPOINTS || undefined);
+  const evmEndpoints = offline ? [] : evmRpcEndpoints();
   return {
     base: './',
     define: { __WALLETCONNECT__: !offline, __SOLANA_RPC_ENDPOINTS__: JSON.stringify(endpoints), __EVM_RPC_ENDPOINTS__: JSON.stringify(evmEndpoints) },

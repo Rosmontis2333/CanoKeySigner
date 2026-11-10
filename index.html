@@ -42,7 +42,7 @@
         <textarea id="transaction-source" rows="9" spellcheck="false" placeholder='{"type":"2","chainId":"1","nonce":"0","gasLimit":"21000","to":"0x...","value":"0","data":"0x","maxFeePerGas":"2000000000","maxPriorityFeePerGas":"1000000000","accessList":[]}'></textarea>
         <details id="transaction-rpc"><summary>可选 RPC 读取与执行检查</summary>
           <p>核对端点与交易 chainId，读取 nonce、余额和区块费用，并发送当前交易内容进行执行检查。所选端点会收到账户地址、金额与 calldata。</p>
-          <label for="transaction-rpc-endpoint">本次使用的 RPC 来源</label><select id="transaction-rpc-endpoint"></select>
+          <select id="transaction-rpc-endpoint" hidden aria-label="自动匹配 RPC"></select><p id="transaction-rpc-source" class="subtle"></p>
           <div class="actions"><button id="transaction-rpc-read" class="secondary" type="button" disabled>读取 RPC 上下文并检查执行</button><button id="transaction-rpc-cancel" class="secondary" type="button" disabled>取消 RPC 读取</button></div>
         </details>
         <div class="actions"><button id="transaction-parse" type="button" disabled>自动识别并审查</button></div>
@@ -61,7 +61,7 @@
         <section id="transaction-broadcast-pane" hidden>
           <div class="panel-heading"><h2>提交与状态查询</h2><span class="badge">独立批准</span></div>
           <p>将当前签名交易提交给所选 RPC。提交后可能产生链上执行和费用。响应不确定时保留交易标识，查询状态后再判断。</p>
-          <label for="transaction-broadcast-source">提交来源</label><select id="transaction-broadcast-source"></select>
+          <select id="transaction-broadcast-source" hidden aria-label="自动匹配提交来源"></select><p id="transaction-broadcast-rpc" class="subtle"></p>
           <dl id="transaction-broadcast-review" class="report"></dl>
           <label><input id="transaction-broadcast-confirm" type="checkbox" /> 我已核对本次交易、来源和网络费，批准提交这份签名交易。</label>
           <div class="actions"><button id="transaction-broadcast-send" type="button" disabled>批准并提交一次</button><button id="transaction-broadcast-query" class="secondary" type="button" disabled>查询本次交易状态</button></div>
@@ -155,7 +155,7 @@
         <div class="actions"><button id="wc-approve" type="button" hidden>授权当前账户与方法</button><button id="wc-reject" class="secondary" type="button" hidden>拒绝请求</button></div>
         <details id="wc-rpc" hidden><summary>本次请求的 RPC 检查</summary>
           <p>点击后向所选端点提供当前请求的交易内容与账户地址，读取网络、费用和执行结果。批量请求会检查全部交易，完成后逐笔重新确认。</p>
-          <label for="wc-rpc-endpoint">本次请求使用的 RPC 来源</label><select id="wc-rpc-endpoint"></select>
+          <label id="wc-rpc-label" for="wc-rpc-endpoint">本次请求使用的 RPC 来源</label><select id="wc-rpc-endpoint"></select>
           <p id="wc-rpc-source" class="subtle"></p>
           <div class="actions"><button id="wc-rpc-read" class="secondary" type="button" disabled>为本次请求读取 RPC 并检查</button><button id="wc-rpc-cancel" class="secondary" type="button" disabled>取消读取并拒绝请求</button></div>
         </details>

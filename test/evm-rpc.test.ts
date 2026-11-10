@@ -32,7 +32,7 @@ function fixture(transaction: unknown = initial) {
 }
 
 test('EVM RPC configuration binds decimal chain IDs and grants CSP only the configured origins', () => {
-  assert.equal(evmRpcEndpoints().length, 2); assert.deepEqual(evmRpcEndpoints('[]'), []);
+  assert.deepEqual(evmRpcEndpoints().map((endpoint) => endpoint.chainId), ['1', '8453', '42161', '56', '5042']); assert.deepEqual(evmRpcEndpoints('[]'), []);
   const endpoints = evmRpcEndpoints(JSON.stringify([{ name: 'RPC', url: 'http://localhost:8545', chainId: '31337' }]));
   assert.ok(Object.isFrozen(endpoints[0])); assert.equal(endpoints[0]!.chainId, '31337');
   for (const chainId of ['0', '01', '0x1', '1.0', ((1n << 256n)).toString()]) assert.throws(() => evmRpcEndpoints(JSON.stringify([{ ...endpoint, chainId }])));
