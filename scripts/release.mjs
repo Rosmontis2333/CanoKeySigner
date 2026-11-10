@@ -67,7 +67,7 @@ try {
         throw new Error(`${directory} differs between consecutive builds`);
       }
       const html = await readFile(join(root, directory, 'index.html'), 'utf8');
-      if (!html.includes(`CanoKeySigner ${metadata.version}`) || html.includes('__CANOKEY_VERSION__')) throw new Error('Build version is missing');
+      if (!html.includes(`name="application-version" content="${metadata.version}"`) || html.includes('__CANOKEY_VERSION__')) throw new Error('Build version is missing');
       if (directory === 'dist-offline' && !html.includes("connect-src 'none';")) throw new Error('Offline CSP must prohibit connections');
       if (directory === 'dist-offline') {
         for (const name of current.filter((file) => file.path.endsWith('.js')).map((file) => file.path)) {
