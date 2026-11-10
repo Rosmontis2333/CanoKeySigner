@@ -12,7 +12,7 @@
 <body>
 <main id="app">
   <header class="masthead"><a class="brand" href="./">◈ <span>CanoKeySigner</span></a><div class="device-actions"><span id="connection" class="badge">未连接设备</span><button id="connect" type="button">连接 CanoKey</button><button id="reconnect" class="secondary" type="button">重新读取</button><button id="cancel" class="secondary" type="button" disabled>取消操作</button></div></header>
-  <section class="intro"><p class="eyebrow">YOUR KEY. YOUR SIGNATURE.</p><h1>选择账户，开始签名。</h1><p>使用 CanoKey 现有密钥，审查并签署每一笔交易。</p></section>
+  <section class="intro"><p class="eyebrow">YOUR KEY. YOUR SIGNATURE.</p></section>
   <nav class="coins" aria-label="选择币种">
     <button class="coin selected" data-coin="evm" type="button" aria-pressed="true"><span class="coin-icon eth"><svg viewBox="0 0 32 32" aria-hidden="true"><path fill="#c5ccff" d="M16 2 7 17l9 5 9-5z"/><path fill="#858fce" d="M16 2v20l9-5z"/><path fill="#c5ccff" d="m7 19 9 11 9-11-9 5z"/><path fill="#858fce" d="M16 24v6l9-11z"/></svg></span><span>Ethereum / EVM<small>ETH 与 EVM 网络</small></span><span class="coin-check">✓</span></button>
     <button class="coin" data-coin="bitcoin" type="button" aria-pressed="false"><span class="coin-icon btc"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="16" fill="#f7931a"/><path fill="#fff" d="M23.2 13.7c.3-2.1-1.3-3.2-3.5-4l.7-2.8-1.7-.4-.7 2.7-1.4-.3.7-2.8-1.7-.4-.7 2.8-1.1-.3-2.3-.6-.5 1.8 1.2.3c.7.2.8.6.8 1l-.8 3.2.2.1h-.2l-1.1 4.4c-.1.2-.3.6-.8.4l-1.2-.3-.8 1.9 2.2.6 1.2.3-.7 2.8 1.7.4.7-2.8 1.4.4-.7 2.8 1.7.4.7-2.8c2.9.5 5.1.3 6-2.3.7-2.1 0-3.3-1.5-4.1 1.1-.3 1.9-1 2.2-2.4Zm-4 5.6c-.5 2.1-4.1 1-5.3.7l.9-3.7c1.2.3 4.9.9 4.4 3Zm.5-5.6c-.5 1.9-3.4.9-4.4.7l.8-3.4c1 .3 4.1.7 3.6 2.7Z"/></svg></span><span>Bitcoin<small>BTC</small></span><span class="coin-check">✓</span></button>
@@ -39,7 +39,7 @@
         <label for="transaction-file">导入文件</label>
         <input id="transaction-file" type="file" accept=".json,.hex,.txt" />
         <label id="transaction-source-label" for="transaction-source">交易 / 消息内容</label>
-        <textarea id="transaction-source" rows="9" spellcheck="false" placeholder='{"type":"2","chainId":"1","nonce":"0","gasLimit":"21000","to":"0x...","value":"0","data":"0x","maxFeePerGas":"2000000000","maxPriorityFeePerGas":"1000000000","accessList":[]}'></textarea>
+        <textarea id="transaction-source" rows="9" spellcheck="false" placeholder="可识别格式&#10;交易 JSON / Hex&#10;EIP-712 JSON&#10;UTF-8 文本消息"></textarea>
         <details id="transaction-rpc"><summary>可选 RPC 读取与执行检查</summary>
           <p>核对端点与交易 chainId，读取 nonce、余额和区块费用，并发送当前交易内容进行执行检查。所选端点会收到账户地址、金额与 calldata。</p>
           <select id="transaction-rpc-endpoint" hidden aria-label="自动匹配 RPC"></select><p id="transaction-rpc-source" class="subtle"></p>
@@ -79,7 +79,7 @@
         <label for="bitcoin-file">导入文件</label>
         <input id="bitcoin-file" type="file" accept=".psbt,.hex,.txt,.base64" />
         <label for="bitcoin-source">PSBT Base64 / Hex</label>
-        <textarea id="bitcoin-source" rows="9" spellcheck="false" placeholder="粘贴 PSBT，或选择文件"></textarea>
+        <textarea id="bitcoin-source" rows="9" spellcheck="false" placeholder="可识别格式&#10;PSBT v0 / v2（Base64 / Hex）&#10;二进制 PSBT 文件"></textarea>
         <div class="actions"><button id="bitcoin-parse" type="button" disabled>自动识别并审查</button></div>
         <p id="bitcoin-status" role="status" aria-live="polite"></p>
         <dl id="bitcoin-review" class="report"></dl>
@@ -106,7 +106,7 @@
         <label id="solana-file-label" for="solana-file">导入文件</label>
         <input id="solana-file" type="file" accept=".bin,.hex,.txt,.base64,.base58" />
         <label id="solana-source-label" for="solana-source">交易 / 离链消息内容</label>
-        <textarea id="solana-source" rows="9" spellcheck="false" placeholder="粘贴交易或消息，自动识别 Base64、Base58、Hex"></textarea>
+        <textarea id="solana-source" rows="9" spellcheck="false" placeholder="可识别格式&#10;交易 / Message（Base64 / Base58 / Hex、二进制文件）&#10;Offchain v0 / v1 消息&#10;UTF-8 文本消息"></textarea>
         <label id="solana-snapshots-label" for="solana-snapshots">v0 ALT 离线快照 JSON（需要时提供）</label><textarea id="solana-snapshots" rows="5" spellcheck="false" placeholder='[{"address":"...","owner":"AddressLookupTab1e1111111111111111111111111","dataBase64":"...","source":"导出来源","contextSlot":"123","network":"mainnet-beta"}]'></textarea>
         <details id="solana-rpc"><summary>可选 RPC 读取与模拟</summary>
           <p>主动读取所选端点的网络、ALT 和费用，并发送当前交易进行模拟。原始交易内容与相关账户地址会提供给该端点。请先核对来源，公共端点可能限流。</p>
@@ -142,7 +142,7 @@
 
     </section>
   </div>
-  <footer><span>本地审查 · 硬件签名 · 签后验签</span><span>CanoKeySigner __CANOKEY_VERSION__ · OpenPGP / CanoKey 3.0.3</span></footer>
+  <footer><span>CanoKeySigner __CANOKEY_VERSION__ · OpenPGP / CanoKey 3.0.3</span></footer>
 </main>
 <dialog id="wc-request-dialog" aria-labelledby="wc-request-title">
   <div class="wallet-dialog-content">
