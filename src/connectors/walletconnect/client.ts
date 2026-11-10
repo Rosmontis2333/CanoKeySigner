@@ -119,7 +119,7 @@ export function createWalletConnection(access: DeviceAccess, hooks: Hooks, loadC
     if (oldProposal) void client?.reject({ id: oldProposal.id, reason }).catch(() => undefined);
     if (oldSession) void client?.disconnect({ topic: oldSession.topic, reason }).catch(() => undefined);
     hooks.status(hadConnection ? '连接已断开，请重新配对并授权。'
-      : hooks.account() ? '当前账户已就绪，填写连接信息开始配对。' : '先选择币种与签名账户。');
+      : hooks.account() ? '当前账户已就绪，填写连接信息开始配对。' : '');
   }
   async function pair(uri: string) {
     if (!__WALLETCONNECT__) throw new Error('当前为离线构建，请使用联网构建连接 WalletConnect');

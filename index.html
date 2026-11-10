@@ -33,7 +33,7 @@
       <div id="manual-pane">
       <section class="transaction-panel" id="manual-evm">
         <div class="panel-heading"><h2>手动签名 / EVM</h2><span class="badge" id="transaction-kind-badge">type 0 · 1 · 2</span></div>
-        <p id="transaction-help">自动识别交易 JSON / Hex、EIP-712 结构化消息及可阅读文本。支持原生币转账、ERC-20 转账与授权、ERC-721 / ERC-1155 常用转移与授权。相同函数编码会展示多种资产解释，请核对目标合约。导入交易 JSON 或序列化 Hex，金额使用最小单位整数。已签名交易可只读检查。</p>
+        <p id="transaction-help">自动识别交易 JSON / Hex、EIP-712 结构化消息及可阅读文本。支持原生币转账、ERC-20 转账与授权、ERC-721 / ERC-1155 常用转移与授权。</p>
 
         <select id="transaction-slot" hidden><option>请先读取设备</option></select>
         <label for="transaction-file">导入文件</label>
@@ -46,7 +46,7 @@
           <div class="actions"><button id="transaction-rpc-read" class="secondary" type="button" disabled>读取 RPC 上下文并检查执行</button><button id="transaction-rpc-cancel" class="secondary" type="button" disabled>取消 RPC 读取</button></div>
         </details>
         <div class="actions"><button id="transaction-parse" type="button" disabled>自动识别并审查</button></div>
-        <p id="transaction-status" role="status" aria-live="polite">连接 CanoKey 后即可导入并审查签名内容。</p>
+        <p id="transaction-status" role="status" aria-live="polite"></p>
         <dl id="transaction-review" class="report"></dl>
         <div id="transaction-approval" hidden>
         <label for="transaction-pin">OpenPGP 用户 PIN</label>
@@ -71,17 +71,17 @@
       </section>
       <section class="transaction-panel" id="manual-bitcoin" hidden>
         <div class="panel-heading"><h2>交易签名 / Bitcoin</h2><span class="badge">PSBT v0 · v2</span></div>
-        <p>支持 P2PKH、P2WPKH、P2SH-P2WPKH，以及标准 P2SH / P2WSH / P2SH-P2WSH 多签。导入 Base64、Hex 或二进制 PSBT v0 / v2，审查全部输入、输出、多签门槛、锁定时间与矿工费。签名结果保留原 PSBT 版本。</p>
+        <p>支持 P2PKH、P2WPKH、P2SH-P2WPKH，以及标准 P2SH / P2WSH / P2SH-P2WSH 多签。导入 Base64、Hex 或二进制 PSBT v0 / v2，审查全部输入、输出、多签门槛、锁定时间与矿工费。</p>
 
         <select id="bitcoin-slot" hidden><option>请先读取设备</option></select>
         <label class="network-label" id="bitcoin-network-label" for="bitcoin-network">确认 Bitcoin 网络</label>
         <select id="bitcoin-network"><option value="mainnet">Bitcoin Mainnet</option><option value="testnet">Bitcoin Testnet</option></select>
-        <label for="bitcoin-file">导入文件（自动识别文本或二进制）</label>
+        <label for="bitcoin-file">导入文件</label>
         <input id="bitcoin-file" type="file" accept=".psbt,.hex,.txt,.base64" />
         <label for="bitcoin-source">PSBT Base64 / Hex</label>
         <textarea id="bitcoin-source" rows="9" spellcheck="false" placeholder="粘贴 PSBT，或选择文件"></textarea>
         <div class="actions"><button id="bitcoin-parse" type="button" disabled>自动识别并审查</button></div>
-        <p id="bitcoin-status" role="status" aria-live="polite">连接 CanoKey 后即可导入并审查签名内容。</p>
+        <p id="bitcoin-status" role="status" aria-live="polite"></p>
         <dl id="bitcoin-review" class="report"></dl>
         <div id="bitcoin-approval" hidden>
         <label for="bitcoin-pin">OpenPGP 用户 PIN</label>
@@ -98,12 +98,12 @@
       </section>
       <section class="transaction-panel" id="manual-solana" hidden>
         <div class="panel-heading"><h2>手动签名 / Solana</h2><span class="badge" id="solana-kind-badge">legacy · v0 · v1</span></div>
-        <p id="solana-help">自动识别已编码 transaction / message、标准 offchain 消息及可阅读文本。可阅读文本将生成 offchain v1 消息。导入交易后，完整展示 signer、账户权限、blockhash 和指令，验证并保留已有签名。v1 展示消息头资源配置，完整消息不超过 1331 字节时可签名，超出时仅供审查。支持 SPL Token 及已知 Token-2022 操作，包括显式手续费转移、手续费配置与提取、Memo 要求和 CPI Guard。Token-2022 转移需使用 TransferCheckedWithFee 声明预期手续费。未解析扩展或额外 Hook 账户会拒签。</p>
+        <p id="solana-help">自动识别已编码 transaction / message、标准 offchain 消息及可阅读文本。可阅读文本将生成 offchain v1 消息。导入交易后，完整展示 signer、账户权限、blockhash 和指令，验证并保留已有签名。v1 展示消息头资源配置，完整消息不超过 1331 字节时可签名，超出时仅供审查。</p>
 
         <select id="solana-slot" hidden><option>请先读取设备</option></select>
         <label class="network-label" id="solana-network-label" for="solana-network">确认 Solana cluster</label>
         <select id="solana-network"><option value="mainnet-beta">Solana Mainnet Beta</option><option value="devnet">Solana Devnet</option><option value="testnet">Solana Testnet</option></select>
-        <label id="solana-file-label" for="solana-file">导入文件（自动识别文本或二进制）</label>
+        <label id="solana-file-label" for="solana-file">导入文件</label>
         <input id="solana-file" type="file" accept=".bin,.hex,.txt,.base64,.base58" />
         <label id="solana-source-label" for="solana-source">交易 / 离链消息内容</label>
         <textarea id="solana-source" rows="9" spellcheck="false" placeholder="粘贴交易或消息，自动识别 Base64、Base58、Hex"></textarea>
@@ -114,7 +114,7 @@
           <div class="actions"><button id="solana-rpc-read" class="secondary" type="button" disabled>读取 RPC 上下文并模拟</button><button id="solana-rpc-cancel" class="secondary" type="button" disabled>取消 RPC 读取</button></div>
         </details>
         <div class="actions"><button id="solana-parse" type="button" disabled>自动识别并审查</button></div>
-        <p id="solana-status" role="status" aria-live="polite">连接 CanoKey 后即可导入并审查签名内容。</p>
+        <p id="solana-status" role="status" aria-live="polite"></p>
         <dl id="solana-review" class="report"></dl>
         <div id="solana-approval" hidden>
         <label for="solana-pin">OpenPGP 用户 PIN</label>
@@ -150,7 +150,7 @@
         <p>通过左侧 WalletConnect 入口连接 dApp，授权当前账户。每次交易或消息请求都需要单独审查与硬件签名。EVM 与 Solana 提交请求需主动读取 RPC 并审查费用与执行检查，硬件签名后单独批准提交。EVM 展示缺省字段补全，Solana 解析 ALT 并保留原始消息、blockhash 与已有协签。</p>
         <p class="subtle">Portions © 2025 Reown, Inc. All Rights Reserved · <a href="%BASE_URL%WALLETCONNECT-LICENSE.md" target="_blank" rel="noopener">WalletConnect 许可证</a></p>
         <p id="wc-capabilities" class="subtle"></p>
-        <p id="wc-status" class="status" role="status" aria-live="polite">先选择币种与签名账户。</p>
+        <p id="wc-status" class="status" role="status" aria-live="polite"></p>
         <dl id="wc-review" class="report"></dl>
         <div class="actions"><button id="wc-approve" type="button" hidden>授权当前账户与方法</button><button id="wc-reject" class="secondary" type="button" hidden>拒绝请求</button></div>
         <details id="wc-rpc" hidden><summary>本次请求的 RPC 检查</summary>

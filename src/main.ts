@@ -82,7 +82,7 @@ function refreshAccount(resetSlot = false): void {
   if (!address.options.length) { const placeholder = document.createElement('option'); placeholder.value = ''; placeholder.textContent = '等待选择槽位'; address.append(placeholder); }
   if (Array.from(address.options).some((option) => option.value === previousAddress)) address.value = previousAddress;
   detail.textContent = key ? `${key.slot} · ${key.algorithm} · ${key.uifHex.startsWith('00') ? '按槽位策略签名' : '需要触摸确认'}`
-    : discovery ? '此币种没有可用算法槽位，请检查现有密钥配置。' : '连接设备后读取现有签名槽位。';
+    : discovery ? '此币种没有可用算法槽位，请检查现有密钥配置。' : '';
   refresh();
 }
 async function useDevice<T>(selected: USBDevice, abort: AbortController, signing: boolean,
