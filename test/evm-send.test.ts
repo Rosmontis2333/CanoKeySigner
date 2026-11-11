@@ -37,18 +37,18 @@ test('EVM send resolves a normal minimal dApp request into an exact chain-bound 
   assert.equal(f.device.counts().signatures, 0);
 });
 
-test('EVM send namespace authorization follows configured RPC availability for every requested chain', () => {
+test('EVM namespace authorization accepts requested chains independently of RPC availability', () => {
   const f = fixture(), automatic = { ...f.account, network: '', chainId: '' };
   const required = { requiredNamespaces: { eip155: { chains: ['eip155:1'], methods: ['eth_sendTransaction'], events: [] } }, optionalNamespaces: {} };
   const available = (chain: string) => chain === 'eip155:1';
   assert.deepEqual(sessionNamespaces(required, automatic, available).eip155!.methods, ['eth_sendTransaction']);
-  assert.throws(() => sessionNamespaces(required, automatic, () => false));
+  assert.deepEqual(sessionNamespaces(required, automatic, () => false).eip155!.methods, ['eth_sendTransaction']);
   const mixed = { chains: ['eip155:1', 'eip155:8453'], methods: ['eth_signTransaction', 'eth_sendTransaction'], events: [] };
-  assert.throws(() => sessionNamespaces({ requiredNamespaces: { eip155: mixed }, optionalNamespaces: {} }, automatic, available));
-  assert.deepEqual(sessionNamespaces({ requiredNamespaces: {}, optionalNamespaces: { eip155: mixed } }, automatic, available).eip155!.methods, ['eth_signTransaction']);
+  assert.deepEqual(sessionNamespaces({ requiredNamespaces: { eip155: mixed }, optionalNamespaces: {} }, automatic, available).eip155!.chains, mixed.chains);
+  assert.deepEqual(sessionNamespaces({ requiredNamespaces: {}, optionalNamespaces: { eip155: mixed } }, automatic, available).eip155!.methods, mixed.methods);
 });
 
-test('Merging optional chains cannot expand a required send permission to a chain without RPC', () => {
+test('Merged EVM chain permissions conform to the proposal while send availability is checked per request', () => {
   const f = fixture(), account = { ...f.account, network: '', chainId: '' };
   const required = { eip155: { chains: ['eip155:1'], methods: ['eth_sendTransaction'], events: [] } };
   const optional = { eip155: { chains: ['eip155:8453'], methods: ['eth_signTransaction'], events: [] } };
@@ -59,7 +59,7 @@ test('Merging optional chains cannot expand a required send permission to a chai
     assert.equal(isConformingNamespaces(proposal.requiredNamespaces, granted, 'send permissions'), null);
     assert.equal(accountForWalletRequest(account, granted, 'eip155:1', 'eth_sendTransaction').network, '1');
     assert.equal(accountForWalletRequest(account, granted, 'eip155:8453', 'eth_signTransaction').network, '8453');
-    assert.throws(() => accountForWalletRequest(account, granted, 'eip155:8453', 'eth_sendTransaction'));
+    assert.equal(accountForWalletRequest(account, granted, 'eip155:8453', 'eth_sendTransaction').network, '8453');
   }
 });
 

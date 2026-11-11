@@ -167,6 +167,7 @@ export function createWalletConnection(access: DeviceAccess, hooks: Hooks, loadC
               const requestAccount = accountForWalletRequest(account, active.namespaces, event.params.chainId, event.params.request.method);
               if (pending || signing || submissionController) throw new Error('请等待上一笔交易处理完成');
               const method = event.params.request.method;
+              if (walletSendsTransaction(method) && hooks.canSubmit?.(event.params.chainId) === false) throw new Error('当前请求网络未内置 RPC，无法发送交易；可继续签署消息');
               if (walletSendsTransaction(method) && submission) throw new Error('请先查询或保存并结束上次提交记录');
               if (method === 'solana_getAccounts') {
                 await client!.respond({ topic: event.topic, response: { id: event.id, jsonrpc: '2.0', result: [{ pubkey: account.address }] } });

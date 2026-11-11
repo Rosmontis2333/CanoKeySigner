@@ -32,7 +32,7 @@ export function sessionNamespaces(proposal: Pick<ProposalTypes.Struct, 'required
     const chains = requestedChains(key, request);
     if ((key !== namespace && !supportsChain(key)) || !chains.length || chains.length > 32 || chains.some((chain) => !supportsChain(chain))
       || request.methods.some((method) => !supported.includes(method)) || request.events.length) throw new Error('此连接要求尚未实现的链、方法或事件');
-    if (request.methods.some(walletSendsTransaction) && chains.some((chain) => !canSubmit(chain))) throw new Error('此连接要求的提交网络尚未配置 RPC 来源');
+    if (account.coin !== 'evm' && request.methods.some(walletSendsTransaction) && chains.some((chain) => !canSubmit(chain))) throw new Error('此连接要求的提交网络尚未配置 RPC 来源');
   }
   const chains = new Set<string>(), methods = new Set<string>();
   const granted: SessionTypes.Namespaces = {};
@@ -40,7 +40,7 @@ export function sessionNamespaces(proposal: Pick<ProposalTypes.Struct, 'required
     if (key !== namespace && !supportsChain(key)) continue;
     const acceptedChains = requestedChains(key, request).filter(supportsChain);
     const acceptedMethods = request.methods.filter((method) => supported.includes(method)
-      && (!walletSendsTransaction(method) || acceptedChains.some(canSubmit)));
+      && (account.coin === 'evm' || !walletSendsTransaction(method) || acceptedChains.some(canSubmit)));
     if (!acceptedChains.length || !acceptedMethods.length) continue;
     for (const chain of acceptedChains) chains.add(chain);
     for (const method of acceptedMethods) methods.add(method);
@@ -51,12 +51,12 @@ export function sessionNamespaces(proposal: Pick<ProposalTypes.Struct, 'required
     granted[key] = { chains: combinedChains, accounts: combinedChains.map((chain) => `${chain}:${account.address}`),
       methods: [...new Set([...(previous?.methods ?? []), ...acceptedMethods])], events: [] };
   }
-  // A namespace's methods apply to every chain it lists. Scope send permissions
-  // individually when merged optional chains have different RPC availability.
+  // EVM sessions can connect before RPC availability is known. Sending checks
+  // the RPC at request time. Solana send permissions remain scoped by RPC.
   for (const [key, grantedNamespace] of Object.entries(granted)) {
     const sendMethods = grantedNamespace.methods.filter(walletSendsTransaction);
     const grantedChains = grantedNamespace.chains ?? [];
-    if (!sendMethods.length || grantedChains.every(canSubmit)) continue;
+    if (account.coin === 'evm' || !sendMethods.length || grantedChains.every(canSubmit)) continue;
     const otherMethods = grantedNamespace.methods.filter((method) => !walletSendsTransaction(method));
     if (otherMethods.length) granted[key] = { ...grantedNamespace, methods: otherMethods };
     else delete granted[key];

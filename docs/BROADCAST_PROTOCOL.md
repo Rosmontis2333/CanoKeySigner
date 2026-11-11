@@ -20,7 +20,7 @@
 
 ## WalletConnect EVM 提交
 
-eth_sendTransaction 使用单笔交易数组，核对 from、已授权 namespace 及请求 chainId。接受 gas/gasLimit 和 input/data 两组别名，每组只能出现一次。未知字段、账户不匹配和链不一致均阻止签名。required 提交能力要求相关链均有配置的 RPC 来源。optional 按链授予可提供的提交能力，混合链的提交权限使用 chain-qualified namespace，保留其他链可用的签名方法。合并 required 与 optional 时仍维持这个边界。
+eth_sendTransaction 使用单笔交易数组，核对 from、已授权 namespace 及请求 chainId。接受 gas/gasLimit 和 input/data 两组别名，每组只能出现一次。未知字段、账户不匹配和链不一致均阻止签名。EVM 提案中的合法 chainId 和已实现方法可先授权连接，实际 eth_sendTransaction 请求到达时检查 RPC，缺少来源则在设备签名前返回错误。EIP-712 与可阅读消息可继续逐笔审查和签名。Solana 的提交能力按 RPC 可用性授予。
 
 收到请求后固定原始参数，等待用户主动选择来源并读取 RPC。支持 dApp 省略 type、chainId、nonce、gas、value、data、accessList 和对应费用字段的正常调用。chainId 缺省时取本次 WalletConnect 请求的已授权链。nonce 取 pending 值，gasLimit 直接采用 pending gas 估计。缺省 value/data/accessList 分别补为 0、空字节和空列表。type 按费用字段、accessList 和参考区块的 baseFee 推断，明确指定的字段保留原值。
 

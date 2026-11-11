@@ -66,4 +66,4 @@ Solana 批量 RPC 在首次设备签名前读取全部交易并展示每项通�
 
 当前 RPC 入口适用于手动及 WalletConnect 的 Solana/EVM 交易审查。手动签名结果新增独立批准的提交与状态查询流程，共用有界传输，读取与提交方法使用独立白名单。[广播流程](BROADCAST_PROTOCOL.md)
 
-Token 扩展状态、成功链上执行与实际设备/第三方 dApp 联合验收仍需继续完成。当前 WalletConnect 方法集按已实现能力和提交网络 RPC 配置授予。
+Token 扩展状态、成功链上执行与实际设备/第三方 dApp 联合验收仍需继续完成。EVM 连接按已实现方法授予能力，发送请求到达时检查网络 RPC；Solana 的提交能力按网络 RPC 配置授予。

@@ -53,7 +53,7 @@ const transport: ApduTransport = { async exchange(command) {
   else if (command[1] === 0x88) data = Uint8Array.from(secp256k1.sign(command.slice(5, 37), secret, { prehash: false }));
   return Uint8Array.from([...data, 0x90, 0]);
 } };
-function fixture(methods = ['eth_signTransaction'], current = account, chains = [current.chainId], deviceAccess?: DeviceAccess, rpcSupport = false) {
+function fixture(methods = ['eth_signTransaction'], current = account, chains = [current.chainId], deviceAccess?: DeviceAccess, rpcSupport = false, canSubmit?: (chainId: string) => boolean) {
   const namespace = current.coin === 'evm' ? 'eip155' : current.chainId.split(':')[0]!;
   const client = new EventEmitter() as EventEmitter & {
     session: { getAll(): unknown[] }; core: { pairing: { disconnect: (args: unknown) => Promise<void> } };
@@ -78,6 +78,7 @@ function fixture(methods = ['eth_signTransaction'], current = account, chains = 
   const access: DeviceAccess = { slots: () => [current.slot], busy: () => false, cancel: () => { cancellations++; deviceAccess?.cancel(); }, requireReinsert: () => { resetCount++; deviceAccess?.requireReinsert(); },
     async sign(operation) { signCount++; return deviceAccess ? deviceAccess.sign(operation) : operation(transport, new AbortController().signal); } };
   const wallet = createWalletConnection(access, {
+    ...(canSubmit ? { canSubmit } : {}),
     account: () => current, snapshots: () => snapshots, clear: () => { clearCount++; }, status: () => undefined,
     proposal: () => { proposalCount++; }, request: (review, method, batch) => { reviewCount++; reviews.push({ review, method, batch }); },
     ...(rpcSupport ? { contextRequired: (account: WalletAccount, method: string, paramsJson: string) => { contextRequests.push({ account, method, paramsJson }); } } : {}),
@@ -1008,4 +1009,31 @@ test('Solana send fails before a write when its original blockhash is no longer 
   assert.equal(f.submissions.at(-1)!.result!.state, 'not-sent'); assert.ok(f.responses[0]!.response.error);
   assert.equal(f.rpc.calls.filter((call) => call.method === 'sendTransaction').length, 0);
   assert.equal(f.device.counts().signatures, 1); f.wallet.closeSubmission(); f.wallet.invalidate();
+});
+
+
+test('unlisted EVM chains connect without RPC and sign EIP-712 after a rejected send request', async () => {
+  const chain = '999999999';
+  const f = fixture(['eth_sendTransaction', 'eth_signTypedData_v4'], { ...account, network: '', chainId: '' }, [`eip155:${chain}`], undefined, true, () => false);
+  await f.connect();
+  assert.equal(f.rejected.length, 0);
+  assert.equal(f.counts().proposalCount, 1);
+  f.request(2, { chainId: `eip155:${chain}`, method: 'eth_sendTransaction' }); await flush();
+  assert.match(f.responses[0]!.response.error!.message, /RPC/);
+  assert.equal(f.counts().signCount, 0);
+  assert.equal(f.contextRequests.length, 0);
+  const typed = { ...etherMail, domain: { ...etherMail.domain, chainId: chain } };
+  f.request(3, { chainId: `eip155:${chain}`, method: 'eth_signTypedData_v4', params: [address, typed] }); await flush();
+  assert.equal(f.counts().reviewCount, 1);
+  await f.wallet.sign(new TextEncoder().encode('123456'));
+  const signature = f.responses.find((entry) => entry.response.id === 3)!.response.result as string;
+  assert.ok(verifyTyped(signature, JSON.parse(JSON.stringify(typed)), address));
+  f.request(4, { chainId: `eip155:${chain}`, method: 'eth_signTypedData_v4', params: [address, etherMail] });
+  f.request(5, { chainId: 'eip155:1', method: 'eth_signTypedData_v4', params: [address, etherMail] });
+  await flush();
+  const rejected = f.responses.filter((entry) => [4, 5].includes(entry.response.id));
+  assert.equal(rejected.length, 2);
+  assert.ok(rejected.every((entry) => entry.response.error));
+  assert.equal(f.counts().signCount, 1);
+  f.wallet.invalidate();
 });
