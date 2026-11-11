@@ -6,7 +6,7 @@ import { prepareEvmMessage } from '../../chains/evm/message';
 import { evmChainReference } from '../../chains/evm/networks';
 import { prepareSolanaMessage } from '../../chains/solana/message';
 import { solanaSendOptions } from '../../chains/solana/send-options';
-export const walletMethods = { evm: ['eth_signTransaction', 'eth_sendTransaction', 'personal_sign', 'eth_signTypedData_v4'], bitcoin: [], solana: ['solana_getAccounts', 'solana_signTransaction', 'solana_signAllTransactions', 'solana_signAndSendTransaction', 'solana_signMessage'] } as const;
+export const walletMethods = { evm: ['eth_signTransaction', 'eth_sendTransaction', 'personal_sign', 'eth_signTypedData_v4', 'wallet_switchEthereumChain'], bitcoin: [], solana: ['solana_getAccounts', 'solana_signTransaction', 'solana_signAllTransactions', 'solana_signAndSendTransaction', 'solana_signMessage'] } as const;
 export const SOLANA_BATCH_LIMIT = 8;
 export function walletSendsTransaction(method: string): boolean {
   return method === 'eth_sendTransaction' || method === 'solana_signAndSendTransaction';
@@ -14,9 +14,11 @@ export function walletSendsTransaction(method: string): boolean {
 export function sessionNamespaces(proposal: Pick<ProposalTypes.Struct, 'requiredNamespaces' | 'optionalNamespaces'>, account: WalletAccount,
   canSubmit: (chainId: string) => boolean = () => true): SessionTypes.Namespaces {
   if (account.coin === 'bitcoin') throw new Error('Bitcoin 仅提供手动签名');
+  const chainLimit = account.coin === 'evm' ? 256 : 32;
   const automaticEvm = account.coin === 'evm' && !account.chainId;
   const namespace = account.coin === 'evm' ? 'eip155' : account.chainId.split(':')[0]!;
   const supported: readonly string[] = walletMethods[account.coin];
+  const supportedEvents: readonly string[] = account.coin === 'evm' ? ['accountsChanged', 'chainChanged'] : [];
   function supportsChain(chain: string): boolean {
     if (!automaticEvm) return chain === account.chainId;
     try { evmChainReference(chain); return true; } catch { return false; }
@@ -30,8 +32,12 @@ export function sessionNamespaces(proposal: Pick<ProposalTypes.Struct, 'required
   if (entries.length > 32) throw new Error('连接提案的 namespace 数量超过 32');
   for (const [key, request] of Object.entries(proposal.requiredNamespaces)) {
     const chains = requestedChains(key, request);
-    if ((key !== namespace && !supportsChain(key)) || !chains.length || chains.length > 32 || chains.some((chain) => !supportsChain(chain))
-      || request.methods.some((method) => !supported.includes(method)) || request.events.length) throw new Error('此连接要求尚未实现的链、方法或事件');
+    if (key !== namespace && !supportsChain(key)) throw new Error(`不支持的 namespace ${key.slice(0, 100)}`);
+    if (!chains.length || chains.length > chainLimit || chains.some((chain) => !supportsChain(chain))) throw new Error(`不支持的链或链数量 ${chains.join('、').slice(0, 200)}`);
+    const unsupportedMethods = request.methods.filter((method) => !supported.includes(method));
+    if (unsupportedMethods.length) throw new Error(`不支持的方法 ${unsupportedMethods.join('、').slice(0, 200)}`);
+    const unsupportedEvents = request.events.filter((event) => !supportedEvents.includes(event));
+    if (unsupportedEvents.length) throw new Error(`不支持的事件 ${unsupportedEvents.join('、').slice(0, 200)}`);
     if (account.coin !== 'evm' && request.methods.some(walletSendsTransaction) && chains.some((chain) => !canSubmit(chain))) throw new Error('此连接要求的提交网络尚未配置 RPC 来源');
   }
   const chains = new Set<string>(), methods = new Set<string>();
@@ -44,12 +50,13 @@ export function sessionNamespaces(proposal: Pick<ProposalTypes.Struct, 'required
     if (!acceptedChains.length || !acceptedMethods.length) continue;
     for (const chain of acceptedChains) chains.add(chain);
     for (const method of acceptedMethods) methods.add(method);
-    if (chains.size > 32) throw new Error('连接提案的链数量超过 32');
+    if (chains.size > chainLimit) throw new Error(`连接提案的链数量超过 ${chainLimit}`);
     // Keep chain-qualified namespace permissions local to that namespace.
     const previous = granted[key];
     const combinedChains = [...new Set([...(previous?.chains ?? []), ...acceptedChains])];
     granted[key] = { chains: combinedChains, accounts: combinedChains.map((chain) => `${chain}:${account.address}`),
-      methods: [...new Set([...(previous?.methods ?? []), ...acceptedMethods])], events: [] };
+      methods: [...new Set([...(previous?.methods ?? []), ...acceptedMethods])],
+      events: [...new Set([...(previous?.events ?? []), ...request.events.filter((event) => supportedEvents.includes(event))])] };
   }
   // EVM sessions can connect before RPC availability is known. Sending checks
   // the RPC at request time. Solana send permissions remain scoped by RPC.

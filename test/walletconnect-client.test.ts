@@ -53,16 +53,23 @@ const transport: ApduTransport = { async exchange(command) {
   else if (command[1] === 0x88) data = Uint8Array.from(secp256k1.sign(command.slice(5, 37), secret, { prehash: false }));
   return Uint8Array.from([...data, 0x90, 0]);
 } };
-function fixture(methods = ['eth_signTransaction'], current = account, chains = [current.chainId], deviceAccess?: DeviceAccess, rpcSupport = false, canSubmit?: (chainId: string) => boolean) {
+function fixture(methods = ['eth_signTransaction'], current = account, chains = [current.chainId], deviceAccess?: DeviceAccess, rpcSupport = false, canSubmit?: (chainId: string) => boolean, events: string[] = []) {
   const namespace = current.coin === 'evm' ? 'eip155' : current.chainId.split(':')[0]!;
   const client = new EventEmitter() as EventEmitter & {
     session: { getAll(): unknown[] }; core: { pairing: { disconnect: (args: unknown) => Promise<void> } };
     pair: (args: unknown) => Promise<void>; approve: (args: unknown) => Promise<unknown>;
     disconnect: (args: unknown) => Promise<void>; reject: (args: unknown) => Promise<void>; respond: (args: unknown) => Promise<void>;
   };
+  const statuses: string[] = [];
   const responses: { topic: string; response: { id: number; result?: unknown; error?: { message: string; data?: string } } }[] = [];
+  const emitted: unknown[] = [];
+  const dispatch = client.emit.bind(client);
+  client.emit = ((event: string | symbol | object, ...args: unknown[]) => {
+    if (typeof event === 'object') { emitted.push(event); return Promise.resolve(); }
+    return dispatch(event, ...args);
+  }) as typeof client.emit;
   const disconnected: unknown[] = [], rejected: unknown[] = [], pairs: unknown[] = [], approved: unknown[] = [];
-  const session = { topic, expiry: currentTime() + 3600, namespaces: { [namespace]: { chains, accounts: chains.map((chain) => `${chain}:${current.address}`), methods, events: [] } }, peer: { metadata: { name: 'Test dApp' } } };
+  const session = { topic, expiry: currentTime() + 3600, namespaces: { [namespace]: { chains, accounts: chains.map((chain) => `${chain}:${current.address}`), methods, events } }, peer: { metadata: { name: 'Test dApp' } } };
   client.session = { getAll: () => [] }; client.core = { pairing: { disconnect: async () => undefined } };
   client.pair = async (args) => { pairs.push(args); };
   client.approve = async (args) => { approved.push(args); return { acknowledged: async () => session }; };
@@ -79,7 +86,7 @@ function fixture(methods = ['eth_signTransaction'], current = account, chains = 
     async sign(operation) { signCount++; return deviceAccess ? deviceAccess.sign(operation) : operation(transport, new AbortController().signal); } };
   const wallet = createWalletConnection(access, {
     ...(canSubmit ? { canSubmit } : {}),
-    account: () => current, snapshots: () => snapshots, clear: () => { clearCount++; }, status: () => undefined,
+    account: () => current, snapshots: () => snapshots, clear: () => { clearCount++; }, status: (text) => { statuses.push(text); },
     proposal: () => { proposalCount++; }, request: (review, method, batch) => { reviewCount++; reviews.push({ review, method, batch }); },
     ...(rpcSupport ? { contextRequired: (account: WalletAccount, method: string, paramsJson: string) => { contextRequests.push({ account, method, paramsJson }); } } : {}),
     rpc: (_account, available, busy, signable, checks) => { rpcStates.push({ available, busy, signable, checks }); },
@@ -87,7 +94,7 @@ function fixture(methods = ['eth_signTransaction'], current = account, chains = 
   }, async (options) => { initializations.push(options); return client as unknown as SignClient; });
   const initializations: unknown[] = [];
   function proposal(pairingTopic = topic) { client.emit('session_proposal', { id: 1, params: { id: 1, expiryTimestamp: currentTime() + 300, pairingTopic,
-    requiredNamespaces: { [namespace]: { chains, methods, events: [] } }, optionalNamespaces: {} } }); }
+    requiredNamespaces: { [namespace]: { chains, methods, events } }, optionalNamespaces: {} } }); }
   function request(id = 2, options: { chainId?: string; topic?: string; expiry?: number; method?: string; params?: unknown } = {}) {
     client.emit('session_request', { id, topic: options.topic ?? topic, params: { chainId: options.chainId ?? current.chainId, request: { method: options.method ?? 'eth_signTransaction',
       expiryTimestamp: options.expiry ?? currentTime() + 300,
@@ -96,7 +103,7 @@ function fixture(methods = ['eth_signTransaction'], current = account, chains = 
   }
   async function connect() { await wallet.pair(uri); proposal(); await flush(); await wallet.approve(); }
   return { wallet, client, access, responses, disconnected, rejected, pairs, approved, initializations, session, proposal, request, connect, reviews, contextRequests, rpcStates,
-    submissions, setSnapshots: (value: string) => { snapshots = value; },
+    submissions, statuses, emitted, setSnapshots: (value: string) => { snapshots = value; },
     counts: () => ({ signCount, proposalCount, reviewCount, cancellations, resetCount, clearCount }) };
 }
 
@@ -1013,8 +1020,8 @@ test('Solana send fails before a write when its original blockhash is no longer 
 
 
 test('unlisted EVM chains connect without RPC and sign EIP-712 after a rejected send request', async () => {
-  const chain = '999999999';
-  const f = fixture(['eth_sendTransaction', 'eth_signTypedData_v4'], { ...account, network: '', chainId: '' }, [`eip155:${chain}`], undefined, true, () => false);
+  const chain = '5042002';
+  const f = fixture(['eth_sendTransaction', 'eth_signTypedData_v4'], { ...account, network: '', chainId: '' }, [`eip155:${chain}`], undefined, true, () => false, ['accountsChanged', 'chainChanged']);
   await f.connect();
   assert.equal(f.rejected.length, 0);
   assert.equal(f.counts().proposalCount, 1);
@@ -1034,6 +1041,58 @@ test('unlisted EVM chains connect without RPC and sign EIP-712 after a rejected 
   const rejected = f.responses.filter((entry) => [4, 5].includes(entry.response.id));
   assert.equal(rejected.length, 2);
   assert.ok(rejected.every((entry) => entry.response.error));
+  assert.equal(f.counts().signCount, 1);
+  f.wallet.invalidate();
+});
+
+
+test('proposal failures show the exact unsupported method to the user', async () => {
+  const f = fixture(['wallet_unsupportedMethod'], { ...account, network: '', chainId: '' }, ['eip155:5042002']);
+  await f.wallet.pair(uri); f.proposal(); await flush();
+  assert.equal(f.rejected.length, 1);
+  assert.ok(f.statuses.some((status) => status.includes('不支持的方法 wallet_unsupportedMethod')));
+  assert.equal(f.counts().proposalCount, 0);
+  assert.equal(f.counts().signCount, 0);
+  f.wallet.invalidate();
+});
+
+
+test('Safe-style optional chain proposals switch to Arc testnet and sign without an RPC', async () => {
+  const methods = ['eth_sendTransaction', 'personal_sign', 'eth_signTypedData_v4', 'wallet_switchEthereumChain'];
+  const chains = ['eip155:1', 'eip155:5042002'];
+  const f = fixture(methods, { ...account, network: '', chainId: '' }, chains, undefined, true, () => false, ['chainChanged', 'accountsChanged']);
+  await f.wallet.pair(uri);
+  f.client.emit('session_proposal', { id: 1, params: { id: 1, expiryTimestamp: currentTime() + 300, pairingTopic: topic,
+    requiredNamespaces: {}, optionalNamespaces: { eip155: { chains, methods: [...methods, 'eth_sign', 'wallet_addEthereumChain'], events: ['chainChanged', 'accountsChanged', 'message'] } } } });
+  await flush(); await f.wallet.approve();
+  f.request(2, { chainId: 'eip155:1', method: 'wallet_switchEthereumChain', params: [{ chainId: '0x4cef52' }] }); await flush();
+  assert.equal(f.responses[0]!.response.error, undefined);
+  assert.equal(f.responses[0]!.response.result, null);
+  assert.deepEqual(f.emitted, [{ topic, chainId: 'eip155:5042002', event: { name: 'chainChanged', data: '0x4cef52' } }]);
+  f.request(3, { chainId: 'eip155:5042002', method: 'wallet_switchEthereumChain', params: [{ chainId: '0x89' }] }); await flush();
+  assert.ok(f.responses[1]!.response.error);
+  assert.equal(f.emitted.length, 1);
+  f.request(5, { chainId: 'eip155:5042002', method: 'wallet_switchEthereumChain', params: [{ chainId: '0x4cef52' }] }); await flush();
+  assert.equal(f.responses.at(-1)!.response.result, null);
+  assert.equal(f.emitted.length, 1);
+  const typed = {
+    types: {
+      EIP712Domain: [{ name: 'chainId', type: 'uint256' }, { name: 'verifyingContract', type: 'address' }],
+      SafeTx: [
+        { name: 'to', type: 'address' }, { name: 'value', type: 'uint256' }, { name: 'data', type: 'bytes' },
+        { name: 'operation', type: 'uint8' }, { name: 'safeTxGas', type: 'uint256' }, { name: 'baseGas', type: 'uint256' },
+        { name: 'gasPrice', type: 'uint256' }, { name: 'gasToken', type: 'address' }, { name: 'refundReceiver', type: 'address' }, { name: 'nonce', type: 'uint256' },
+      ],
+    },
+    primaryType: 'SafeTx',
+    domain: { chainId: '5042002', verifyingContract: '0x' + '12'.repeat(20) },
+    message: { to: '0x' + '34'.repeat(20), value: '0', data: '0x', operation: 0, safeTxGas: '0', baseGas: '0', gasPrice: '0',
+      gasToken: '0x' + '00'.repeat(20), refundReceiver: '0x' + '00'.repeat(20), nonce: '1' },
+  };
+  f.request(4, { chainId: 'eip155:5042002', method: 'eth_signTypedData_v4', params: [address, typed] }); await flush();
+  await f.wallet.sign(new TextEncoder().encode('123456'));
+  const signature = f.responses.find((entry) => entry.response.id === 4)!.response.result as string;
+  assert.ok(verifyTyped(signature, JSON.parse(JSON.stringify(typed)), address));
   assert.equal(f.counts().signCount, 1);
   f.wallet.invalidate();
 });

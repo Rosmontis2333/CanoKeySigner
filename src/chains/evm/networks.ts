@@ -1,6 +1,6 @@
 // Display names only. Transaction encoding and signatures always use the original numeric ID.
 const names: Readonly<Record<string, string>> = Object.freeze({
-  '5042': 'Arc（USDC）',
+  '5042': 'Arc（USDC）', '5042002': 'Arc Testnet（USDC）',
   '1': 'Ethereum Mainnet', '11155111': 'Ethereum Sepolia',
   '10': 'OP Mainnet', '11155420': 'OP Sepolia',
   '42161': 'Arbitrum One', '42170': 'Arbitrum Nova', '421614': 'Arbitrum Sepolia',

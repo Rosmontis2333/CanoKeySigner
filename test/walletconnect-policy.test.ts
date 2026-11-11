@@ -1,3 +1,4 @@
+import { isConformingNamespaces } from '@walletconnect/utils';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { base64 } from '@scure/base';
@@ -40,7 +41,7 @@ test('WalletConnect required namespaces fail closed and optional capabilities gr
   for (const request of [
     { ...proposed, requiredNamespaces: { eip155: { chains: ['eip155:1'], methods: ['eth_signTransaction'], events: [] } } },
     { ...proposed, requiredNamespaces: { eip155: { chains: [current.chainId], methods: ['wallet_sendCalls'], events: [] } } },
-    { ...proposed, requiredNamespaces: { eip155: { chains: [current.chainId], methods: ['eth_signTransaction'], events: ['accountsChanged'] } } },
+    { ...proposed, requiredNamespaces: { eip155: { chains: [current.chainId], methods: ['eth_signTransaction'], events: ['unsupportedEvent'] } } },
   ]) assert.throws(() => sessionNamespaces(request, current));
   const optional = sessionNamespaces({ requiredNamespaces: {}, optionalNamespaces: { eip155: { chains: [current.chainId], methods: ['eth_signTransaction', 'eth_sign'], events: [] } } }, current);
   assert.deepEqual(optional.eip155!.methods, ['eth_signTransaction']);
@@ -189,4 +190,29 @@ test('automatic EVM accounts take chains from proposals and bind each request to
   assert.throws(() => accountForWalletRequest(current, qualified, 'eip155:1', 'personal_sign'));
   assert.throws(() => accountForWalletRequest(current, qualified, 'eip155:8453', 'eth_signTransaction'));
   assert.throws(() => sessionNamespaces({ requiredNamespaces: { 'eip155:1': { chains: ['eip155:8453'], methods: ['personal_sign'], events: [] } }, optionalNamespaces: {} }, current));
+});
+
+
+test('Arc testnet message connections accept standard EVM events without RPC', () => {
+  const current = { ...account('evm'), network: '', chainId: '' };
+  const proposal = { requiredNamespaces: { eip155: { chains: ['eip155:5042002'],
+    methods: ['personal_sign', 'eth_sendTransaction', 'eth_signTypedData_v4'], events: ['accountsChanged', 'chainChanged'] } }, optionalNamespaces: {} };
+  const granted = sessionNamespaces(proposal, current, () => false);
+  assert.equal(isConformingNamespaces(proposal.requiredNamespaces, granted, 'Arc testnet'), null);
+  assert.deepEqual(granted.eip155!.events, ['accountsChanged', 'chainChanged']);
+  assert.deepEqual(granted.eip155!.methods, proposal.requiredNamespaces.eip155.methods);
+  assert.equal(accountForWalletRequest(current, granted, 'eip155:5042002', 'eth_signTypedData_v4').network, '5042002');
+});
+
+
+test('Safe-style chain lists can contain more than 32 EVM networks with bounded permissions', () => {
+  const current = { ...account('evm'), network: '', chainId: '' };
+  const chains = Array.from({ length: 80 }, (_, index) => `eip155:${index + 1}`);
+  chains.push('eip155:5042002');
+  const request = { chains, methods: ['personal_sign', 'eth_signTypedData_v4', 'wallet_switchEthereumChain', 'eth_sign'], events: ['chainChanged', 'accountsChanged', 'message'] };
+  const granted = sessionNamespaces({ requiredNamespaces: {}, optionalNamespaces: { eip155: request } }, current, () => false);
+  assert.deepEqual(granted.eip155!.chains, chains);
+  assert.deepEqual(granted.eip155!.events, ['chainChanged', 'accountsChanged']);
+  assert.ok(!granted.eip155!.methods.includes('eth_sign'));
+  assert.throws(() => sessionNamespaces({ requiredNamespaces: {}, optionalNamespaces: { eip155: { ...request, chains: Array.from({ length: 257 }, (_, index) => `eip155:${index + 1}`) } } }, current));
 });

@@ -57,6 +57,8 @@ export function createWalletConnection(access: DeviceAccess, hooks: Hooks, loadC
   let pending: Pending | undefined;
   let generation = 0;
   let signing = false;
+  let switching = false;
+  let notifiedEvmChain: string | undefined;
   let expiryTimer: ReturnType<typeof setTimeout> | undefined;
   let rpcController: AbortController | undefined;
   let submissionController: AbortController | undefined;
@@ -108,6 +110,7 @@ export function createWalletConnection(access: DeviceAccess, hooks: Hooks, loadC
   function invalidate() {
     const hadConnection = starting || approving || pairing || !!proposal || !!session;
     generation++;
+    notifiedEvmChain = undefined;
     pairing = false;
     const oldPairing = pairingTopic; pairingTopic = undefined;
     if (oldPairing) void client?.core.pairing.disconnect({ topic: oldPairing }).catch(() => undefined);
@@ -147,8 +150,9 @@ export function createWalletConnection(access: DeviceAccess, hooks: Hooks, loadC
               proposal = event.params; namespaces = granted; pairing = false;
               hooks.proposal(proposal, granted);
             } catch (error) {
-              await client!.reject({ id: event.id, reason: { code: 5100, message: error instanceof Error ? error.message : '不支持的提案' } });
-              pairing = false; hooks.status('提案已拒绝，请检查所需链与方法。');
+              const message = error instanceof Error ? error.message : '不支持的提案';
+              pairing = false; hooks.status(`提案已拒绝，${message}`);
+              await client!.reject({ id: event.id, reason: { code: 5100, message } }).catch(() => undefined);
             }
           })().catch(() => hooks.status('提案处理失败，请重新连接。'));
         });
@@ -165,7 +169,7 @@ export function createWalletConnection(access: DeviceAccess, hooks: Hooks, loadC
             try {
               if (!active || !account || event.topic !== active.topic || (!Number.isFinite(deadline) || deadline <= now())) throw new Error('请求不属于当前授权会话');
               const requestAccount = accountForWalletRequest(account, active.namespaces, event.params.chainId, event.params.request.method);
-              if (pending || signing || submissionController) throw new Error('请等待上一笔交易处理完成');
+              if (pending || signing || switching || submissionController) throw new Error('请等待上一笔交易处理完成');
               const method = event.params.request.method;
               if (walletSendsTransaction(method) && hooks.canSubmit?.(event.params.chainId) === false) throw new Error('当前请求网络未内置 RPC，无法发送交易；可继续签署消息');
               if (walletSendsTransaction(method) && submission) throw new Error('请先查询或保存并结束上次提交记录');
@@ -176,6 +180,22 @@ export function createWalletConnection(access: DeviceAccess, hooks: Hooks, loadC
               const paramsJson = JSON.stringify(event.params.request.params);
               if (typeof paramsJson !== 'string') throw new Error('请求参数无效');
               const params = strictJson(paramsJson);
+              if (method === 'wallet_switchEthereumChain') {
+                const input = Array.isArray(params) && params.length === 1 ? params[0] : undefined;
+                if (!input || typeof input !== 'object' || Array.isArray(input) || Object.keys(input).some((key) => key !== 'chainId')
+                  || typeof input.chainId !== 'string' || !/^0x[1-9a-fA-F][0-9a-fA-F]{0,63}$/.test(input.chainId)) throw new Error('切换网络需要有效的 chainId');
+                const target = accountForWalletRequest(account, active.namespaces, `eip155:${BigInt(input.chainId)}`, method);
+                const notify = [active.namespaces[target.chainId], active.namespaces.eip155].some((granted) => granted?.chains?.includes(target.chainId) && granted.events.includes('chainChanged'));
+                switching = true;
+                try {
+                  if (notify && notifiedEvmChain !== target.chainId) await client!.emit({ topic: event.topic, chainId: target.chainId, event: { name: 'chainChanged', data: '0x' + BigInt(input.chainId).toString(16) } });
+                  if (session !== active || bound !== account || deadline <= now()) throw new Error('账户、会话已改变或请求已过期');
+                  notifiedEvmChain = target.chainId;
+                  await client!.respond({ topic: event.topic, response: { id: event.id, jsonrpc: '2.0', result: null } });
+                  hooks.status(`已切换请求网络 ${target.chainId}`);
+                  return;
+                } finally { switching = false; }
+              }
               let reviews: readonly WalletReview[];
               try {
                 if (walletSendsTransaction(method)) {

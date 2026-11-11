@@ -38,7 +38,7 @@ v0 ALT 当前通过含 raw account data、owner、context slot、网络和明确
 
 审查绑定规范化交易、公钥、chainId 与完整字段。一次性批准绑定已有槽位，五分钟后过期。字段变更、设备重新读取、断连或页面退出会废弃审查，正在进行的任务会取消。设备签名前重新核对算法、公钥与触摸策略，签后验证签名、恢复账户和序列化交易的一致性。
 
-默认联网构建仅在用户发起 WalletConnect 配对时动态加载官方 SignClient 2.26.0。内置用户指定的 Project ID `d2a8b6044c46a77b4de519960103175c`。SDK telemetry 已关闭，CSP 限制到 WalletConnect relay、Verify 服务与构建时配置的 RPC 来源，远程 dApp 图标不加载。用户填写 dApp v2 URI 后，先审查链、账户和方法的提案，再逐笔审查交易，使用相同的 OpenPGP 交易执行与验签路径返回签名结果。币种、槽位、地址变化和断连均使连接授权失效。BTC/Solana 的网络变化同样清除连接授权。EVM 根据 dApp 提案批准最多 32 条链，每次请求均核对 namespace、链、方法与账户。
+默认联网构建仅在用户发起 WalletConnect 配对时动态加载官方 SignClient 2.26.0。内置用户指定的 Project ID `d2a8b6044c46a77b4de519960103175c`。SDK telemetry 已关闭，CSP 限制到 WalletConnect relay、Verify 服务与构建时配置的 RPC 来源，远程 dApp 图标不加载。用户填写 dApp v2 URI 后，先审查链、账户和方法的提案，再逐笔审查交易，使用相同的 OpenPGP 交易执行与验签路径返回签名结果。币种、槽位、地址变化和断连均使连接授权失效。BTC/Solana 的网络变化同样清除连接授权。EVM 根据 dApp 提案批准最多 256 条链，支持 accountsChanged / chainChanged 事件和已授权网络间的切换，每次请求均核对 namespace、链、方法与账户。
 
 当前 WalletConnect 授予的能力为 EVM `eth_signTransaction` / `eth_sendTransaction` / `personal_sign` / `eth_signTypedData_v4`，Solana `solana_getAccounts` / `solana_signTransaction` / `solana_signAllTransactions` / `solana_signAndSendTransaction` / 受限 `solana_signMessage`。EVM 连接可授予未内置 RPC 的链及已实现方法，发送请求到达时检查 RPC，EIP-712 消息签名可直接进入审查。Solana 提交方法依照相应链的 RPC 配置授予。不满足 required namespaces 的连接提案会被拒绝。签名方法按协议返回消息签名或签名交易，EVM 提交方法返回交易哈希，Solana 提交方法返回第一签名。Bitcoin 的连接、bip122 namespace、账户与 PSBT 请求在协议入口拒绝，设备签名继续使用手动流程。
 
