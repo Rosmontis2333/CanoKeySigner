@@ -1125,3 +1125,23 @@ test('unconfirmed SDK settlement times out without reporting a successful connec
   assert.equal(f.counts().signCount, 0);
   f.wallet.invalidate();
 });
+
+
+test('a provider echo during chainChanged waits for the first switch and returns without another event', async () => {
+  const f = fixture(['wallet_switchEthereumChain'], { ...account, network: '', chainId: '' }, ['eip155:1', 'eip155:5042002'], undefined, false, undefined, ['chainChanged']);
+  await f.connect();
+  let finish!: () => void;
+  const dispatch = f.client.emit.bind(f.client);
+  f.client.emit = ((event: string | symbol | object, ...args: unknown[]) => {
+    if (typeof event === 'object') return new Promise<void>((resolve) => { finish = resolve; });
+    return dispatch(event, ...args);
+  }) as typeof f.client.emit;
+  f.request(2, { chainId: 'eip155:1', method: 'wallet_switchEthereumChain', params: [{ chainId: '0x4cef52' }] }); await flush();
+  f.request(3, { chainId: 'eip155:5042002', method: 'wallet_switchEthereumChain', params: [{ chainId: '4cef52' }] }); await flush();
+  assert.equal(f.responses.length, 0);
+  finish(); await flush(); await flush();
+  assert.equal(f.responses.length, 2);
+  assert.ok(f.responses.every((response) => response.response.result === null && !response.response.error));
+  assert.equal(f.counts().signCount, 0);
+  f.wallet.invalidate();
+});

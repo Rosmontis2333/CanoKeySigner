@@ -59,7 +59,7 @@ export function createWalletConnection(access: DeviceAccess, hooks: Hooks, loadC
   let pending: Pending | undefined;
   let generation = 0;
   let signing = false;
-  let switching = false;
+  let switchReady: Promise<void> | undefined;
   let notifiedEvmChain: string | undefined;
   let expiryTimer: ReturnType<typeof setTimeout> | undefined;
   let rpcController: AbortController | undefined;
@@ -167,13 +167,14 @@ export function createWalletConnection(access: DeviceAccess, hooks: Hooks, loadC
             seen.add(key);
             const receivedAt = now();
             if (approvalReady) await approvalReady;
+            while (switchReady) await switchReady;
             const active = session;
             const account = bound;
             const deadline = Math.min(active?.expiry ?? 0, event.params.request.expiryTimestamp ?? receivedAt + 300, receivedAt + 300);
             try {
               if (!active || !account || event.topic !== active.topic || (!Number.isFinite(deadline) || deadline <= now())) throw new Error('请求不属于当前授权会话');
               const requestAccount = accountForWalletRequest(account, active.namespaces, event.params.chainId, event.params.request.method);
-              if (pending || signing || switching || submissionController) throw new Error('请等待上一笔交易处理完成');
+              if (pending || signing || submissionController) throw new Error('请等待上一笔交易处理完成');
               const method = event.params.request.method;
               if (walletSendsTransaction(method) && hooks.canSubmit?.(event.params.chainId) === false) throw new Error('当前请求网络未内置 RPC，无法发送交易；可继续签署消息');
               if (walletSendsTransaction(method) && submission) throw new Error('请先查询或保存并结束上次提交记录');
@@ -192,7 +193,9 @@ export function createWalletConnection(access: DeviceAccess, hooks: Hooks, loadC
                 const targetId = BigInt('0x' + input.chainId.replace(/^0x/, '')).toString();
                 const target = accountForWalletRequest(account, active.namespaces, `eip155:${targetId}`, method);
                 const notify = [active.namespaces[target.chainId], active.namespaces.eip155].some((granted) => granted?.chains?.includes(target.chainId) && granted.events.includes('chainChanged'));
-                switching = true;
+                let finishSwitch!: () => void;
+                const ready = new Promise<void>((resolve) => { finishSwitch = resolve; });
+                switchReady = ready;
                 try {
                   if (notify && notifiedEvmChain !== target.chainId) await client!.emit({ topic: event.topic, chainId: target.chainId, event: { name: 'chainChanged', data: '0x' + BigInt(targetId).toString(16) } });
                   if (session !== active || bound !== account || deadline <= now()) throw new Error('账户、会话已改变或请求已过期');
@@ -200,7 +203,10 @@ export function createWalletConnection(access: DeviceAccess, hooks: Hooks, loadC
                   await client!.respond({ topic: event.topic, response: { id: event.id, jsonrpc: '2.0', result: null } });
                   hooks.status(`已切换请求网络 ${target.chainId}`);
                   return;
-                } finally { switching = false; }
+                } finally {
+                  finishSwitch();
+                  if (switchReady === ready) switchReady = undefined;
+                }
               }
               let reviews: readonly WalletReview[];
               try {
