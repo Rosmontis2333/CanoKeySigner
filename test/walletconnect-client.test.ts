@@ -56,7 +56,7 @@ const transport: ApduTransport = { async exchange(command) {
 function fixture(methods = ['eth_signTransaction'], current = account, chains = [current.chainId], deviceAccess?: DeviceAccess, rpcSupport = false, canSubmit?: (chainId: string) => boolean, events: string[] = []) {
   const namespace = current.coin === 'evm' ? 'eip155' : current.chainId.split(':')[0]!;
   const client = new EventEmitter() as EventEmitter & {
-    session: { getAll(): unknown[] }; core: { pairing: { disconnect: (args: unknown) => Promise<void> } };
+    session: { getAll(): unknown[]; get(topic: string): unknown }; core: { pairing: { disconnect: (args: unknown) => Promise<void> } };
     pair: (args: unknown) => Promise<void>; approve: (args: unknown) => Promise<unknown>;
     disconnect: (args: unknown) => Promise<void>; reject: (args: unknown) => Promise<void>; respond: (args: unknown) => Promise<void>;
   };
@@ -69,8 +69,8 @@ function fixture(methods = ['eth_signTransaction'], current = account, chains = 
     return dispatch(event, ...args);
   }) as typeof client.emit;
   const disconnected: unknown[] = [], rejected: unknown[] = [], pairs: unknown[] = [], approved: unknown[] = [];
-  const session = { topic, expiry: currentTime() + 3600, namespaces: { [namespace]: { chains, accounts: chains.map((chain) => `${chain}:${current.address}`), methods, events } }, peer: { metadata: { name: 'Test dApp' } } };
-  client.session = { getAll: () => [] }; client.core = { pairing: { disconnect: async () => undefined } };
+  const session = { topic, acknowledged: true, expiry: currentTime() + 3600, namespaces: { [namespace]: { chains, accounts: chains.map((chain) => `${chain}:${current.address}`), methods, events } }, peer: { metadata: { name: 'Test dApp' } } };
+  client.session = { getAll: () => [], get: () => session }; client.core = { pairing: { disconnect: async () => undefined } };
   client.pair = async (args) => { pairs.push(args); };
   client.approve = async (args) => { approved.push(args); return { acknowledged: async () => session }; };
   client.disconnect = async (args) => { disconnected.push(args); };
@@ -1065,7 +1065,7 @@ test('Safe-style optional chain proposals switch to Arc testnet and sign without
   f.client.emit('session_proposal', { id: 1, params: { id: 1, expiryTimestamp: currentTime() + 300, pairingTopic: topic,
     requiredNamespaces: {}, optionalNamespaces: { eip155: { chains, methods: [...methods, 'eth_sign', 'wallet_addEthereumChain'], events: ['chainChanged', 'accountsChanged', 'message'] } } } });
   await flush(); await f.wallet.approve();
-  f.request(2, { chainId: 'eip155:1', method: 'wallet_switchEthereumChain', params: [{ chainId: '0x4cef52' }] }); await flush();
+  f.request(2, { chainId: 'eip155:1', method: 'wallet_switchEthereumChain', params: [{ chainId: '4cef52' }] }); await flush();
   assert.equal(f.responses[0]!.response.error, undefined);
   assert.equal(f.responses[0]!.response.result, null);
   assert.deepEqual(f.emitted, [{ topic, chainId: 'eip155:5042002', event: { name: 'chainChanged', data: '0x4cef52' } }]);
@@ -1094,5 +1094,34 @@ test('Safe-style optional chain proposals switch to Arc testnet and sign without
   const signature = f.responses.find((entry) => entry.response.id === 4)!.response.result as string;
   assert.ok(verifyTyped(signature, JSON.parse(JSON.stringify(typed)), address));
   assert.equal(f.counts().signCount, 1);
+  f.wallet.invalidate();
+});
+
+
+test('requests sent immediately after settlement wait for acknowledgement before review', async () => {
+  const f = fixture(['personal_sign']);
+  f.session.acknowledged = false;
+  await f.wallet.pair(uri); f.proposal(); await flush();
+  const approving = f.wallet.approve(); await flush();
+  f.request(2, { method: 'personal_sign', params: ['0x6869', address] }); await flush();
+  assert.equal(f.counts().reviewCount, 0);
+  assert.equal(f.responses.length, 0);
+  assert.ok(!f.statuses.some((status) => status.startsWith('已连接')));
+  f.session.acknowledged = true;
+  await approving; await flush();
+  assert.equal(f.counts().reviewCount, 1);
+  assert.equal(f.responses.length, 0);
+  assert.ok(f.statuses.some((status) => status.startsWith('已连接')));
+  await f.wallet.reject(); f.wallet.invalidate();
+});
+
+test('unconfirmed SDK settlement times out without reporting a successful connection', async (context) => {
+  const f = fixture(); f.session.acknowledged = false;
+  await f.wallet.pair(uri); f.proposal(); await flush();
+  context.mock.timers.enable({ apis: ['Date', 'setTimeout'] });
+  const approving = assert.rejects(f.wallet.approve(), /dApp 尚未确认连接/);
+  await flush(); context.mock.timers.tick(30001); await flush(); await approving;
+  assert.ok(!f.statuses.some((status) => status.startsWith('已连接')));
+  assert.equal(f.counts().signCount, 0);
   f.wallet.invalidate();
 });

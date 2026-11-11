@@ -1,3 +1,4 @@
+import { waitForSessionAcknowledgement } from './handshake';
 import type SignClient from '@walletconnect/sign-client';
 import type { ProposalTypes, SessionTypes, SignClientTypes } from '@walletconnect/types';
 import { base58, base64 } from '@scure/base';
@@ -47,6 +48,7 @@ export function createWalletConnection(access: DeviceAccess, hooks: Hooks, loadC
   let client: SignClient | undefined;
   let starting = false;
   let approving = false;
+  let approvalReady: Promise<void> | undefined;
   let pairingTopic: string | undefined;
   let pairing = false;
   let proposal: ProposalTypes.Struct | undefined;
@@ -163,9 +165,11 @@ export function createWalletConnection(access: DeviceAccess, hooks: Hooks, loadC
             if (seen.has(key)) return;
             if (seen.size >= 1024) { await respondError(event, '会话请求上限已到，请重新连接'); return; }
             seen.add(key);
+            const receivedAt = now();
+            if (approvalReady) await approvalReady;
             const active = session;
             const account = bound;
-            const deadline = Math.min(active?.expiry ?? 0, event.params.request.expiryTimestamp ?? now() + 300, now() + 300);
+            const deadline = Math.min(active?.expiry ?? 0, event.params.request.expiryTimestamp ?? receivedAt + 300, receivedAt + 300);
             try {
               if (!active || !account || event.topic !== active.topic || (!Number.isFinite(deadline) || deadline <= now())) throw new Error('请求不属于当前授权会话');
               const requestAccount = accountForWalletRequest(account, active.namespaces, event.params.chainId, event.params.request.method);
@@ -183,12 +187,14 @@ export function createWalletConnection(access: DeviceAccess, hooks: Hooks, loadC
               if (method === 'wallet_switchEthereumChain') {
                 const input = Array.isArray(params) && params.length === 1 ? params[0] : undefined;
                 if (!input || typeof input !== 'object' || Array.isArray(input) || Object.keys(input).some((key) => key !== 'chainId')
-                  || typeof input.chainId !== 'string' || !/^0x[1-9a-fA-F][0-9a-fA-F]{0,63}$/.test(input.chainId)) throw new Error('切换网络需要有效的 chainId');
-                const target = accountForWalletRequest(account, active.namespaces, `eip155:${BigInt(input.chainId)}`, method);
+                  || typeof input.chainId !== 'string' || !/^(?:0x)?[1-9a-fA-F][0-9a-fA-F]{0,63}$/.test(input.chainId)) throw new Error('切换网络需要有效的 chainId');
+                // Older EthereumProvider versions send the hexadecimal digits without 0x.
+                const targetId = BigInt('0x' + input.chainId.replace(/^0x/, '')).toString();
+                const target = accountForWalletRequest(account, active.namespaces, `eip155:${targetId}`, method);
                 const notify = [active.namespaces[target.chainId], active.namespaces.eip155].some((granted) => granted?.chains?.includes(target.chainId) && granted.events.includes('chainChanged'));
                 switching = true;
                 try {
-                  if (notify && notifiedEvmChain !== target.chainId) await client!.emit({ topic: event.topic, chainId: target.chainId, event: { name: 'chainChanged', data: '0x' + BigInt(input.chainId).toString(16) } });
+                  if (notify && notifiedEvmChain !== target.chainId) await client!.emit({ topic: event.topic, chainId: target.chainId, event: { name: 'chainChanged', data: '0x' + BigInt(targetId).toString(16) } });
                   if (session !== active || bound !== account || deadline <= now()) throw new Error('账户、会话已改变或请求已过期');
                   notifiedEvmChain = target.chainId;
                   await client!.respond({ topic: event.topic, response: { id: event.id, jsonrpc: '2.0', result: null } });
@@ -212,7 +218,11 @@ export function createWalletConnection(access: DeviceAccess, hooks: Hooks, loadC
               pending = { event: { ...event }, account: Object.freeze({ ...requestAccount }), method, paramsJson, reviews,
                 ready: reviews.length > 0, checked: false, index: 0, outputs: [], deadline };
               scheduleExpiry(); showPending();
-            } catch (error) { await respondError(event, error instanceof Error ? error.message : '请求参数无效', -32602); }
+            } catch (error) {
+              const message = error instanceof Error ? error.message : '请求参数无效';
+              if (event.topic === session?.topic) hooks.status(`请求已拒绝，${event.params.request.method}，${message}`);
+              await respondError(event, message, -32602);
+            }
           })().catch(() => hooks.status('请求处理失败，请断开连接。'));
         });
         const deleted = (event: { topic: string }) => { if (event.topic === session?.topic) invalidate(); };
@@ -224,7 +234,7 @@ export function createWalletConnection(access: DeviceAccess, hooks: Hooks, loadC
       if (revision !== generation) throw new Error('账户已改变，请重新配对');
       bound = Object.freeze({ ...account, slot: Object.freeze({ ...account.slot }) });
       pairingTopic = uri.slice(3, uri.indexOf('@'));
-      pairing = true;
+      pairing = true; seen.clear();
       await client.pair({ uri });
       if (revision !== generation) throw new Error('配对已取消');
       if (pairing) hooks.status('已提交配对，等待 dApp 连接提案。');
@@ -237,16 +247,29 @@ export function createWalletConnection(access: DeviceAccess, hooks: Hooks, loadC
     const selectedProposal = proposal;
     const selectedNamespaces = namespaces;
     proposal = undefined; namespaces = undefined; approving = true;
+    let finishApproval!: () => void;
+    const ready = new Promise<void>((resolve) => { finishApproval = resolve; });
+    approvalReady = ready;
+    let approvalTopic: string | undefined;
     try {
       const approved = await client.approve({ id: selectedProposal.id, namespaces: selectedNamespaces });
-      const established = await approved.acknowledged();
+      const localSession = await approved.acknowledged();
+      approvalTopic = localSession.topic;
+      if (revision !== generation) { await client.disconnect({ topic: localSession.topic, reason }); return; }
+      hooks.status('已批准连接，正在等待 dApp 确认…');
+      const established = await waitForSessionAcknowledgement(client, localSession.topic, () => revision === generation);
       if (revision !== generation) { await client.disconnect({ topic: established.topic, reason }); return; }
-      session = established; pairing = false; seen.clear(); hooks.clear();
+      session = established; pairing = false; hooks.clear();
       hooks.status(`已连接 ${session.peer.metadata.name}，等待逐笔交易请求。`);
     } catch (error) {
+      if (approvalTopic) await client.disconnect({ topic: approvalTopic, reason }).catch(() => undefined);
       if (revision === generation) invalidate();
       throw error;
-    } finally { approving = false; }
+    } finally {
+      finishApproval();
+      if (approvalReady === ready) approvalReady = undefined;
+      approving = false;
+    }
   }
   async function sign(pin: Uint8Array) {
     const captured = pending, account = bound;
