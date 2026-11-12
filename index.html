@@ -148,9 +148,6 @@
 <dialog id="wc-request-dialog" aria-labelledby="wc-request-title">
   <div class="wallet-dialog-content">
         <div class="panel-heading"><h2 id="wc-request-title">WalletConnect 请求</h2><button id="wc-request-close" class="text-button" type="button" aria-label="关闭请求窗口">关闭 ✕</button></div>
-        <p>通过左侧 WalletConnect 入口连接 dApp，授权当前账户。每次交易或消息请求都需要单独审查与硬件签名。EVM 与 Solana 提交请求需主动读取 RPC 并审查费用与执行检查，硬件签名后单独批准提交。EVM 展示缺省字段补全，Solana 解析 ALT 并保留原始消息、blockhash 与已有协签。</p>
-        <p class="subtle">Portions © 2025 Reown, Inc. All Rights Reserved · <a href="%BASE_URL%WALLETCONNECT-LICENSE.md" target="_blank" rel="noopener">WalletConnect 许可证</a></p>
-        <p id="wc-capabilities" class="subtle"></p>
         <p id="wc-status" class="status" role="status" aria-live="polite"></p>
         <dl id="wc-review" class="report"></dl>
         <div class="actions"><button id="wc-approve" type="button" hidden>授权当前账户与方法</button><button id="wc-reject" class="secondary" type="button" hidden>拒绝请求</button></div>

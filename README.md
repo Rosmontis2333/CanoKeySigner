@@ -76,3 +76,7 @@ npm run release
 `npm run test:relay` 通过官方 SDK 验证真实 relay 互操作，设备和 RPC 使用合成数据。`npm run test:rpc` 与 `npm run test:rpc:evm` 对公共测试网络执行只读查询及模拟。发布仍需完成真机交易、实际第三方 dApp、跨系统设备矩阵和测试网络执行验收。[开发计划与验收条件](docs/DEVELOPMENT_PLAN.md)
 
 已有固定的三链交易与 255/256/1331 字节消息材料，可在重新读取并匹配设备公钥后逐项验收。[应用真机验收材料](docs/hardware/APPLICATION_ACCEPTANCE.md)
+
+Portions © 2025 Reown, Inc. All Rights Reserved
+
+[WalletConnect 许可证](public/WALLETCONNECT-LICENSE.md)

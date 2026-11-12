@@ -5,7 +5,7 @@ import { mountTransactionApp } from './ui/transaction';
 import { accountAddresses, accountChain } from './ui/accounts';
 import type { Coin, WalletAccount } from './ui/accounts';
 import { createWalletConnection } from './connectors/walletconnect/client';
-import { walletMethods, SOLANA_BATCH_LIMIT, walletSendsTransaction } from './connectors/walletconnect/policy';
+import { walletSendsTransaction } from './connectors/walletconnect/policy';
 import type { DeviceAccess } from './signing/execute';
 import { evmNetworkLabel, evmChainReference } from './chains/evm/networks';
 import { mountWalletSubmission } from './ui/wallet-submission';
@@ -55,8 +55,6 @@ function refresh(): void {
   }
   const account = selectedAccount();
   get('wc-alt-context').hidden = coin !== 'solana';
-  get('wc-capabilities').textContent = coin === 'bitcoin' ? '' : `当前支持 ${walletMethods[coin].join('、')}`;
-  if (coin === 'solana') get('wc-capabilities').textContent += `。批量交易最多 ${SOLANA_BATCH_LIMIT} 笔，逐笔确认。`;
   currentAddress.textContent = account?.address ?? '等待连接兼容的密钥槽位';
   copy.disabled = !account;
   wcSign.disabled = busy || requiresReinsert || wcRpcBusy || !wcSignable;
