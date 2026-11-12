@@ -1,3 +1,4 @@
+import { runWithUsbReconnect } from './device/reconnect';
 import { discoverOpenPgp } from './device/openpgp';
 import type { OpenPgpDiscovery } from './device/openpgp';
 import { WebUsbTransport, waitForDeviceSelection } from './device/webusb';
@@ -21,6 +22,10 @@ let device: USBDevice | undefined;
 let discovery: OpenPgpDiscovery | undefined;
 let controller: AbortController | undefined;
 let requiresReinsert = false;
+let deviceSerial: string | undefined;
+let preferredDevice: USBDevice | undefined;
+let signingTask = false, signingStarted = false;
+const deviceWait = get<HTMLDialogElement>('device-wait');
 let connectionDialog: ReturnType<typeof mountWalletPairing> | undefined;
 const available = window.isSecureContext && 'usb' in navigator && 'locks' in navigator;
 const apps = new Map<Coin, ReturnType<typeof mountTransactionApp>>();
@@ -57,7 +62,7 @@ function refresh(): void {
   get('wc-alt-context').hidden = coin !== 'solana';
   currentAddress.textContent = account?.address ?? '等待连接兼容的密钥槽位';
   copy.disabled = !account;
-  wcSign.disabled = busy || requiresReinsert || wcRpcBusy || !wcSignable;
+  wcSign.disabled = busy || wcRpcBusy || !wcSignable;
   requestClose.disabled = busy || submissionBusy;
   get('wc-sidebar').hidden = coin === 'bitcoin';
   get<HTMLButtonElement>('wc-open').disabled = !__WALLETCONNECT__ || busy;
@@ -96,16 +101,36 @@ async function useDevice<T>(selected: USBDevice, abort: AbortController, signing
   });
 }
 const access: DeviceAccess = {
-  slots: () => discovery?.slots ?? [], selectedSlot: (chain) => chain === coin ? slot.value : undefined, busy: () => !!controller || requiresReinsert,
-  cancel: () => controller?.abort(), requireReinsert: () => { requiresReinsert = device !== undefined; refresh(); },
+  slots: () => discovery?.slots ?? [], selectedSlot: (chain) => chain === coin ? slot.value : undefined, busy: () => !!controller,
+  cancel: () => controller?.abort(), requireReinsert: () => { requiresReinsert = signingStarted && device !== undefined; refresh(); },
   async sign(operation) {
-    if (!device || controller || requiresReinsert) throw new Error('请先连接可用的 CanoKey');
-    const selected = device, abort = new AbortController(); controller = abort; refresh();
+    if (!discovery || controller) throw new Error('请先读取 CanoKey 的账户');
+    const abort = new AbortController(); controller = abort;
+    signingTask = true; signingStarted = false; refresh();
     try {
-      const result = await useDevice(selected, abort, true, (transport) => operation(transport, abort.signal));
-      if (abort.signal.aborted || device !== selected) throw new Error('账户连接已改变，结果已作废');
-      return result;
-    } finally { controller = undefined; refresh(); }
+      return await runWithUsbReconnect({
+        usb: navigator.usb, signal: abort.signal, serialNumber: deviceSerial, preferred: () => preferredDevice,
+        ready: () => !requiresReinsert,
+        missing() { requiresReinsert = false; device = undefined; },
+        waiting() {
+          get('device-wait-status').textContent = requiresReinsert
+            ? '请拔插 CanoKey，等待恢复连接后继续本次签名。'
+            : '正在等待 CanoKey 连接，接入后会核对槽位公钥并继续本次签名。';
+          if (!deviceWait.open) deviceWait.showModal();
+        },
+        attempt(selected, workAbort, start) {
+          device = selected;
+          return useDevice(selected, workAbort, true, (transport) => {
+            start(); signingStarted = true; deviceWait.close();
+            connection.textContent = selected.productName ?? 'CanoKey';
+            return operation(transport, workAbort.signal);
+          });
+        },
+      });
+    } finally {
+      deviceWait.close(); signingTask = false;
+      controller = undefined; refresh();
+    }
   },
 };
 let activeDapp = '';
@@ -245,7 +270,7 @@ slot.addEventListener('change', () => { invalidateContext(); refreshAccount(); }
 address.addEventListener('change', () => { invalidateContext(); refresh(); });
 copy.addEventListener('click', () => { const account = selectedAccount(); if (account) void navigator.clipboard.writeText(account.address).then(() => { copy.textContent = '已复制'; setTimeout(() => { copy.textContent = '复制地址'; }, 1600); }).catch(() => { status.textContent = '复制失败，可选择当前地址手动复制。'; }); });
 function readDevice(selection: Promise<USBDevice>): void {
-  invalidateContext(); discovery = undefined; device = undefined;
+  invalidateContext(); device = undefined;
   const abort = new AbortController(); controller = abort; refreshAccount(); status.textContent = '正在读取设备账户…';
   void (async () => {
     try {
@@ -254,9 +279,9 @@ function readDevice(selection: Promise<USBDevice>): void {
       device = selected;
       const found = await useDevice(selected, abort, false, (transport) => discoverOpenPgp(transport, abort.signal));
       if (abort.signal.aborted) throw new Error('设备读取已取消');
-      discovery = found; connection.textContent = selected.productName ?? 'CanoKey';
+      discovery = found; preferredDevice = selected; deviceSerial = selected.serialNumber ?? undefined; connection.textContent = selected.productName ?? 'CanoKey';
       status.textContent = `已读取现有槽位，PIN 剩余 ${found.pw1Retries} 次。`;
-    } catch (error) { device = undefined; discovery = undefined; connection.textContent = '未连接设备'; status.textContent = error instanceof Error ? error.message : '读取失败'; }
+    } catch (error) { device = undefined; connection.textContent = discovery ? '设备暂时离线' : '未连接设备'; status.textContent = error instanceof Error ? error.message : '读取失败'; }
     finally { controller = undefined; refreshAccount(); }
   })();
 }
@@ -300,11 +325,33 @@ wcSign.addEventListener('click', () => {
   wcSign.disabled = true; runWallet(() => wallet.sign(pin));
 });
 get('wc-snapshots').addEventListener('input', () => wallet.invalidate());
-if ('usb' in navigator) navigator.usb.addEventListener('disconnect', (event) => {
-  if (event.device !== device) return;
-  invalidateContext(); device = undefined; discovery = undefined; requiresReinsert = false;
-  connection.textContent = '设备已断开'; status.textContent = '请重新连接并读取账户。'; refreshAccount();
+get('device-wait-cancel').addEventListener('click', () => controller?.abort());
+deviceWait.addEventListener('cancel', (event) => { event.preventDefault(); controller?.abort(); });
+get('device-wait-select').addEventListener('click', () => {
+  const current = controller;
+  void navigator.usb.requestDevice({ filters: [{ vendorId: 0x20a0, productId: 0x42d4 }] }).then((selected) => {
+    if (controller !== current || !deviceWait.open) return;
+    if (deviceSerial && selected.serialNumber !== deviceSerial) get('device-wait-status').textContent = '请选择先前读取的 CanoKey。';
+    else preferredDevice = selected;
+  }).catch(() => { if (controller === current && deviceWait.open) get('device-wait-status').textContent = '设备选择未完成，可以继续等待或取消。'; });
 });
+if ('usb' in navigator) {
+  navigator.usb.addEventListener('disconnect', (event) => {
+    if (event.device !== device) return;
+    if (!signingTask || signingStarted) controller?.abort();
+    device = undefined; requiresReinsert = false;
+    connection.textContent = '设备暂时离线';
+    status.textContent = discovery ? '已保留卡信息，可继续审查，签名时等待设备恢复连接。' : '请连接并读取 CanoKey。';
+    refresh();
+  });
+  navigator.usb.addEventListener('connect', (event) => {
+    if (!discovery || event.device.vendorId !== 0x20a0 || event.device.productId !== 0x42d4
+      || (deviceSerial && event.device.serialNumber !== deviceSerial)) return;
+    device = event.device; requiresReinsert = false;
+    connection.textContent = '设备已接入';
+    status.textContent = '已检测到设备，签名前将重新核对槽位公钥。'; refresh();
+  });
+}
 window.addEventListener('pagehide', () => invalidateContext());
 selectCoin('evm');
 if (!available) status.textContent = '请在支持 WebUSB 的桌面 Chromium 中，通过 localhost 或 HTTPS 打开。';

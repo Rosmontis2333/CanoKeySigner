@@ -187,6 +187,14 @@
     <button id="wc-pair" type="button" disabled>确认连接</button>
   </div>
 </dialog>
+<dialog id="device-wait" aria-labelledby="device-wait-title">
+  <div class="wallet-dialog-content">
+    <h2 id="device-wait-title">等待 CanoKey</h2>
+    <p id="device-wait-status" role="status" aria-live="polite"></p>
+    <p class="subtle">本次等待最长 2 分钟，审查或请求过期时会取消。</p>
+    <div class="actions"><button id="device-wait-select" class="secondary" type="button">选择设备</button><button id="device-wait-cancel" type="button">取消本次签名</button></div>
+  </div>
+</dialog>
 <script type="module" src="/src/main.ts"></script>
 </body>
 </html>
