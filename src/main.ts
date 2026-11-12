@@ -341,7 +341,7 @@ if ('usb' in navigator) {
     if (!signingTask || signingStarted) controller?.abort();
     device = undefined; requiresReinsert = false;
     connection.textContent = '设备暂时离线';
-    status.textContent = discovery ? '已保留卡信息，可继续审查，签名时等待设备恢复连接。' : '请连接并读取 CanoKey。';
+    status.textContent = discovery ? '' : '请连接并读取 CanoKey。';
     refresh();
   });
   navigator.usb.addEventListener('connect', (event) => {
